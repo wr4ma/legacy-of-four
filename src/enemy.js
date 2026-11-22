@@ -1,58 +1,67 @@
-import { hurt } from './player.js';
-import { bossAI } from './boss.js';
+import { hurtPlayer, FT, FB } from './combat.js';
+import { drawMan } from './player.js';
+import { bossStrike } from './boss.js';
 
 export const TYPES = {
-  grunt:   { hp: 30, sp: 55,  r: 13, c: '#d9534f', dmg: 8,  score: 10 },
-  runner:  { hp: 18, sp: 115, r: 10, c: '#f0ad4e', dmg: 6,  score: 12 },
-  brute:   { hp: 90, sp: 40,  r: 20, c: '#a0522d', dmg: 16, score: 30 },
-  spitter: { hp: 24, sp: 45,  r: 11, c: '#e84393', dmg: 7,  score: 20 },
+  thug:   { hp: 30,  spd: 60,  dmg: 8,  r: 16, reach: 34, col: '#6d8b3a', sc: 1,   score: 100 },
+  raptor: { hp: 22,  spd: 125, dmg: 7,  r: 18, reach: 38, col: '#3fa34d', sc: 1,   score: 120, rap: true },
+  brute:  { hp: 110, spd: 45,  dmg: 16, r: 26, reach: 50, col: '#a0522d', sc: 1.5, score: 300 },
+  boss:   { hp: 380, spd: 55,  dmg: 20, r: 34, reach: 64, col: '#9b2226', sc: 1.9, score: 2000, boss: true },
 };
 
-export function spawn(G, type, x, y) {
-  const t = TYPES[type];
-  G.enemies.push({ type, ...t, maxHp: t.hp, x, y, flash: 0, cd: 1 + Math.random(), hit: 0, kx: 0, ky: 0 });
-}
-export function spawnEdge(G, type) {
-  const s = Math.floor(Math.random() * 4), a = Math.random();
-  const x = s < 2 ? a * G.W : (s === 2 ? 0 : G.W), y = s < 2 ? (s === 0 ? 0 : G.H) : a * G.H;
-  spawn(G, type, x, y);
+export function spawn(G, t, x, y) {
+  const d = TYPES[t];
+  G.ents.push({ t, ...d, max: d.hp, x, y, z: 0, vz: 0, f: -1, hurtT: 0, downT: 0, kx: 0, aT: 0, cdT: 1, w: 0, dead: false, fade: 0 });
 }
 
 export function updateEnemies(G, dt) {
   const p = G.p;
-  for (const e of G.enemies) {
-    if (e.dead) continue;
-    e.flash -= dt; e.hit -= dt;
-    e.x += e.kx * dt; e.y += e.ky * dt;
-    const f = Math.pow(0.02, dt); e.kx *= f; e.ky *= f;
-    const dx = p.x - e.x, dy = p.y - e.y, d = Math.hypot(dx, dy) || 1;
-    if (e.type === 'boss') bossAI(G, e, dt, dx / d, dy / d, d);
-    else {
-      let dir = 1;
-      if (e.type === 'spitter') {
-        dir = d > 260 ? 1 : d < 180 ? -1 : 0;
-        e.cd -= dt;
-        if (e.cd <= 0) {
-          e.cd = 2;
-          G.eshots.push({ x: e.x, y: e.y, vx: dx / d * 170, vy: dy / d * 170, dmg: e.dmg, r: 5, life: 3, c: e.c });
-        }
+  for (const e of G.ents) {
+    e.x += e.kx * dt; e.kx *= Math.pow(0.05, dt);
+    if (e.hp <= 0) { e.fade += dt; if (e.fade > 1) e.dead = true; continue; }
+    e.hurtT -= dt; e.cdT -= dt;
+    if (e.downT > 0) { e.downT -= dt; e.z += e.vz * dt; e.vz -= 900 * dt; if (e.z < 0) { e.z = 0; e.vz = 0; } continue; }
+    if (e.hurtT > 0) continue;
+    if (e.aT > 0) {
+      e.aT -= dt;
+      if (e.aT <= 0) {
+        if (e.boss) bossStrike(G, e);
+        else if ((p.x - e.x) * e.f > -10 && (p.x - e.x) * e.f < e.reach + 14 && Math.abs(p.y - e.y) < 22 && p.z < 30) hurtPlayer(G, e.dmg, e.f);
       }
-      e.x += dx / d * e.sp * dir * dt; e.y += dy / d * e.sp * dir * dt;
+      continue;
     }
-    if (d < e.r + p.r && e.hit <= 0) { e.hit = 0.8; hurt(G, e.dmg); }
+    const sd = e.x < p.x ? -1 : 1, vx = p.x + sd * (e.reach - 8) - e.x, vy = p.y - e.y, n = Math.hypot(vx, vy) || 1;
+    if (n > 5) { e.x += vx / n * e.spd * dt; e.y += vy / n * e.spd * 0.7 * dt; e.w += dt * 8; }
+    e.f = p.x > e.x ? 1 : -1;
+    e.y = Math.max(FT, Math.min(FB, e.y));
+    if (p.hp > 0 && e.cdT <= 0 && Math.abs(p.x - e.x) < e.reach + 10 && Math.abs(p.y - e.y) < 18) { e.aT = e.boss ? 0.7 : 0.4; e.cdT = 1.4 + Math.random() * 0.6; }
   }
-  G.enemies = G.enemies.filter(e => !e.dead);
+  G.ents = G.ents.filter(e => !e.dead);
 }
 
-export function drawEnemies(ctx, G) {
-  for (const e of G.enemies) {
-    ctx.fillStyle = e.flash > 0 ? '#fff' : e.c;
-    ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, 7); ctx.fill();
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.arc(e.x - e.r * 0.3, e.y - e.r * 0.15, e.r * 0.15, 0, 7); ctx.arc(e.x + e.r * 0.3, e.y - e.r * 0.15, e.r * 0.15, 0, 7); ctx.fill();
-    if (!e.boss && e.hp < e.maxHp) {
-      ctx.fillStyle = '#400'; ctx.fillRect(e.x - e.r, e.y - e.r - 7, e.r * 2, 3);
-      ctx.fillStyle = '#f55'; ctx.fillRect(e.x - e.r, e.y - e.r - 7, e.r * 2 * e.hp / e.maxHp, 3);
-    }
-  }
+function drawRaptor(ctx, e, col) {
+  ctx.save(); ctx.translate(e.x, e.y);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 6, 0, 0, 7); ctx.fill();
+  ctx.translate(0, -e.z); ctx.scale(e.f, 1);
+  const s = Math.sin(e.w) * 5;
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(0, -28, 20, 11, -0.2, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-16, -30); ctx.lineTo(-46, -18); ctx.lineTo(-14, -22); ctx.fill();
+  ctx.fillRect(-7 + s, -20, 5, 20); ctx.fillRect(6 - s, -20, 5, 20);
+  ctx.beginPath(); ctx.ellipse(24, -40, 13, 8, -0.3, 0, 7); ctx.fill();
+  ctx.fillRect(14, -40, 8, 14);
+  if (e.aT > 0) { ctx.fillStyle = '#fff'; ctx.fillRect(26, -36, 14, 4); }
+  ctx.fillStyle = '#ff0'; ctx.fillRect(26, -44, 3, 3);
+  ctx.restore();
+}
+
+export function drawEnemy(ctx, e, t) {
+  ctx.save();
+  const down = e.downT > 0 || e.hp <= 0;
+  if (down) { ctx.translate(e.x, e.y); ctx.rotate(-1.4 * e.f); ctx.translate(-e.x, -e.y); }
+  if (e.hp <= 0) ctx.globalAlpha = Math.floor(t * 20) % 2 ? 0.2 : 0.7;
+  const col = e.hurtT > 0 ? '#fff' : e.col;
+  if (e.rap) drawRaptor(ctx, e, col);
+  else drawMan(ctx, { x: e.x, y: e.y, z: e.z, f: e.f, w: e.w, atk: e.aT > 0 }, col, '#222', e.sc, '#9ccc65');
+  ctx.restore();
 }

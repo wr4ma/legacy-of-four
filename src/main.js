@@ -1,52 +1,69 @@
 import { initControls, pollInput, input } from './controls.js';
-import { newGame, updatePlayer, drawPlayer, hero } from './player.js';
-import { updateEnemies, drawEnemies } from './enemy.js';
-import { updateCombat, drawCombat, attack, special } from './combat.js';
-import { updateLevel, startLevel } from './level.js';
-import { drawArena, drawHUD, drawScreen } from './ui.js';
+import { newPlayer, updatePlayer, drawPlayer } from './player.js';
+import { updateEnemies, drawEnemy } from './enemy.js';
+import { updateShots } from './combat.js';
+import { STAGES, startStage, updateLevel, drawBG } from './level.js';
+import { drawSplash, drawSelect, drawHUD, drawOverlay, cardHit } from './ui.js';
 
-const W = 800, H = 600;
+const W = 800, H = 450;
 const cv = document.getElementById('game'), ctx = cv.getContext('2d');
 cv.width = W; cv.height = H;
-const G = { W, H, state: 'title', t: 0, level: 0, wave: 0, score: 0, enemies: [], shots: [], eshots: [], fx: [], msg: '', msgT: 0, shake: 0, clearT: 0, heroes: [], cur: 0, p: { x: 400, y: 300 } };
+const G = { W, H, state: 'splash', t: 0, sel: 0, stage: 0, cam: 0, score: 0, wi: 0, go: 0, title: 0, t2: 0, locked: false, shake: 0, ents: [], shots: [], fx: [], p: null };
 initControls(cv);
 
-function begin() { newGame(G); startLevel(G, 0); G.state = 'play'; }
+function begin() { G.p = newPlayer(G.sel); G.score = 0; startStage(G, 0); G.state = 'play'; }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 function step(dt) {
-  pollInput();
-  if (G.state === 'title' || G.state === 'over' || G.state === 'win') {
-    if (input.start) { input.start = false; begin(); }
+  pollInput(); G.t += dt;
+  const ok = input.nav === 'ok' || input.tap;
+  if (G.state === 'splash') { if (ok) G.state = 'select'; return; }
+  if (G.state === 'select') {
+    if (input.nav === 'left') G.sel = (G.sel + 3) % 4;
+    if (input.nav === 'right') G.sel = (G.sel + 1) % 4;
+    if (input.nav === 'ok') begin();
+    if (input.tap) { const i = cardHit(input.tap.x, input.tap.y); if (i === G.sel) begin(); else if (i >= 0) G.sel = i; }
     return;
   }
+  if (G.state === 'over' || G.state === 'win') { if (ok) { G.state = 'splash'; G.sel = 0; } return; }
   if (G.state === 'clear') {
-    G.clearT -= dt;
-    if (G.clearT <= 0) { input.start = false; startLevel(G, G.level + 1); G.state = 'play'; }
+    G.t2 -= dt;
+    if (G.t2 <= 0) { const p = G.p; p.hp = Math.min(p.max, p.hp + p.max * 0.4); startStage(G, G.stage + 1); G.state = 'play'; }
     return;
   }
-  input.start = false;
+  const p = G.p, S = STAGES[G.stage];
   updatePlayer(G, dt, input);
-  const h = hero(G);
-  if (input.attack && h.cdT <= 0) { h.cdT = h.cd; attack(G); }
-  if (input.special && h.spT <= 0) special(G);
-  updateEnemies(G, dt);
-  updateCombat(G, dt);
-  if (G.state === 'play') updateLevel(G, dt);
-  G.t += dt; G.msgT -= dt; G.shake = Math.max(0, G.shake - dt);
+  if (!G.locked) G.cam = Math.max(G.cam, Math.min(p.x - W / 2, S.len - W));
+  p.x = clamp(p.x, G.cam + 20, G.cam + W - 20);
+  updateEnemies(G, dt); updateShots(G, dt); updateLevel(G, dt);
+  G.shake = Math.max(0, G.shake - dt);
+  if (p.hp <= 0 && G.state === 'play') {
+    p.deadT += dt;
+    if (p.deadT > 1.5) {
+      p.lives--;
+      if (p.lives <= 0) G.state = 'over';
+      else { p.hp = p.max; p.inv = 2; p.x = G.cam + 80; p.y = 360; p.z = 0; p.deadT = 0; }
+    }
+  }
 }
 
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  if (G.shake > 0) ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6);
-  drawArena(G, ctx);
-  if (G.heroes.length) { drawEnemies(ctx, G); drawPlayer(ctx, G); drawCombat(ctx, G); drawHUD(G, ctx); }
-  drawScreen(G, ctx);
+  if (G.state === 'splash') return drawSplash(ctx, G);
+  if (G.state === 'select') return drawSelect(ctx, G);
+  if (G.shake > 0) ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+  drawBG(ctx, G);
+  ctx.save(); ctx.translate(-G.cam, 0);
+  const list = G.ents.map(e => ({ y: e.y, f: () => drawEnemy(ctx, e, G.t) }));
+  list.push({ y: G.p.y, f: () => drawPlayer(ctx, G.p, G.t) });
+  list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  ctx.fillStyle = '#fff';
+  for (const s of G.shots) { ctx.fillStyle = G.p.ch.c; ctx.beginPath(); ctx.arc(s.x, s.y - 40 - s.z, 8, 0, 7); ctx.fill(); }
+  for (const f of G.fx) { const k = 1 - f.t / f.max; ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.c; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * k, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+  ctx.restore();
+  drawHUD(ctx, G); drawOverlay(ctx, G);
 }
 
 let last = performance.now();
-function loop(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  step(dt); draw();
-  requestAnimationFrame(loop);
-}
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; step(dt); draw(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);

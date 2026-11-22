@@ -1,14 +1,8 @@
 {
-  "applied_at": "2026-11-22T18:59:22.835203+00:00",
-  "added": [
-    ".nojekyll",
-    "assets/audio/.gitkeep",
-    "assets/backgrounds/.gitkeep",
-    "assets/characters/.gitkeep",
-    "assets/effects/.gitkeep",
-    "assets/enemies/.gitkeep",
+  "applied_at": "2026-11-22T19:08:07.927191+00:00",
+  "added": [],
+  "replaced": [
     "index.html",
-    "package.json",
     "src/boss.js",
     "src/combat.js",
     "src/controls.js",
@@ -19,6 +13,5 @@
     "src/ui.js",
     "styles/game.css"
   ],
-  "replaced": [],
   "protected_skipped": []
 }
