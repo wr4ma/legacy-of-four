@@ -58,3 +58,13 @@ body{display:flex;flex-direction:column;touch-action:none;padding-top:env(safe-a
   /* menu: sembunyikan kontrol melayang agar tidak menutupi kartu; ketuk layar saja */
   body[data-state=splash] #touch,body[data-state=select] #touch,body[data-state=over] #touch,body[data-state=win] #touch{visibility:hidden}
 }
+
+/* ---- pilih karakter (portrait): kanvas memenuhi layar, tanpa judul & panel kontrol ---- */
+@media (orientation:portrait){
+  body[data-state=select]{padding:0}
+  body[data-state=select] #title,body[data-state=select] #touch{display:none}
+  body[data-state=select] #stage{position:fixed;inset:0;padding:0;gap:0;justify-content:stretch;align-items:stretch}
+  body[data-state=select] #screen{width:100vw;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);border-radius:0;background:none;box-shadow:none}
+  body[data-state=select] #game{width:100%;height:100%;aspect-ratio:auto;border-radius:0}
+  body[data-state=select] #fs{display:none!important}
+}

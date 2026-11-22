@@ -4,7 +4,7 @@ import { updateEnemies, drawEnemy } from './enemy.js';
 import { drawFx } from './effects.js';
 import { updateShots } from './combat.js';
 import { STAGES, startStage, updateLevel, drawBG } from './level.js';
-import { drawSplash, drawSelect, drawHUD, drawOverlay, cardHit } from './ui.js';
+import { drawSplash, drawSelect, drawSelectTall, tallHit, drawHUD, drawOverlay, cardHit } from './ui.js';
 
 const H = 450;
 const cv = document.getElementById('game'), ctx = cv.getContext('2d');
@@ -13,11 +13,19 @@ const G = { W: 800, H, state: 'splash', t: 0, sel: 0, stage: 0, cam: 0, score: 0
 initControls(cv);
 
 // Lebar logis menyesuaikan layar HP landscape (tanpa bar hitam): 800 (16:9) sampai 1080 (2.4:1).
+// Pilih karakter di portrait memakai kanvas tinggi 450 x H (mengikuti rasio layar).
 const landMQ = matchMedia('(pointer:coarse) and (orientation:landscape)');
+const portMQ = matchMedia('(orientation:portrait)');
+const isTall = () => G.state === 'select' && portMQ.matches;
 function fit() {
-  let w = 800;
-  if (landMQ.matches) w = Math.round(H * Math.max(16 / 9, Math.min(2.4, innerWidth / innerHeight)));
-  if (cv.width !== w) { cv.width = w; G.W = w; }
+  let w = 800, h = H;
+  if (isTall()) {
+    const r = cv.getBoundingClientRect(); w = 450;
+    h = r.width > 0 ? Math.max(640, Math.min(1100, Math.round(450 * r.height / r.width))) : 800;
+  } else if (landMQ.matches) w = Math.round(H * Math.max(16 / 9, Math.min(2.4, innerWidth / innerHeight)));
+  if (cv.width !== w) cv.width = w;
+  if (cv.height !== h) cv.height = h;
+  G.W = w; G.H = h;
 }
 fit(); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 120));
 
@@ -32,7 +40,8 @@ function step(dt) {
     if (input.nav === 'left') G.sel = (G.sel + 3) % 4;
     if (input.nav === 'right') G.sel = (G.sel + 1) % 4;
     if (input.nav === 'ok') begin();
-    if (input.tap) { const i = cardHit(input.tap.x - (G.W - 800) / 2, input.tap.y); if (i === G.sel) begin(); else if (i >= 0) G.sel = i; }
+    if (input.tap && isTall()) { const h = tallHit(input.tap.x, input.tap.y, G); if (h && h.start) begin(); else if (h && h.i === G.sel) begin(); else if (h) G.sel = h.i; }
+    else if (input.tap) { const i = cardHit(input.tap.x - (G.W - 800) / 2, input.tap.y); if (i === G.sel) begin(); else if (i >= 0) G.sel = i; }
     return;
   }
   if (G.state === 'over' || G.state === 'win') { if (ok) { G.state = 'splash'; G.sel = 0; } return; }
@@ -59,9 +68,9 @@ function step(dt) {
 
 function draw() {
   if (document.body.dataset.state !== G.state) document.body.dataset.state = G.state;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  fit(); ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (G.state === 'splash') return drawSplash(ctx, G);
-  if (G.state === 'select') return drawSelect(ctx, G);
+  if (G.state === 'select') return isTall() ? drawSelectTall(ctx, G) : drawSelect(ctx, G);
   if (G.shake > 0) ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
   drawBG(ctx, G);
   ctx.save(); ctx.translate(-G.cam, 0);

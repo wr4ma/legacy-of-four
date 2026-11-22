@@ -1,6 +1,13 @@
 {
-  "applied_at": "2026-11-22T20:29:38.157777+00:00",
-  "added": [],
+  "applied_at": "2026-11-22T20:44:01.983172+00:00",
+  "added": [
+    "PORTRAIT_PROMPTS.md",
+    "assets/portraits/abah_thumb.png",
+    "assets/portraits/ema_thumb.png",
+    "assets/portraits/rhejab_thumb.png",
+    "assets/portraits/yhudhaaa_thumb.png",
+    "src/lore.js"
+  ],
   "replaced": [
     "HANDOFF.md",
     "SPRITE_PROMPTS.md",
