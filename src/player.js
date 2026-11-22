@@ -1,15 +1,16 @@
 import { FT, FB, doAttack, doSpecial } from './combat.js';
+import { drawHeroAt } from './sprites.js';
 
 export const CHARS = [
-  { name: 'Rex', role: 'Brawler', c: '#e8643c', hair: '#5a2d0c', hp: 120, spd: 120, dmg: 10, reach: 50, cd: 0.25 },
-  { name: 'Kira', role: 'Speedster', c: '#35c6dc', hair: '#111', hp: 90, spd: 165, dmg: 8, reach: 44, cd: 0.17 },
-  { name: 'Bruno', role: 'Heavy', c: '#8d6e63', hair: '#bbb', hp: 160, spd: 95, dmg: 15, reach: 56, cd: 0.34 },
-  { name: 'Mira', role: 'Ranged Mage', c: '#c77dff', hair: '#ff4fa3', hp: 80, spd: 125, dmg: 9, reach: 0, cd: 0.3 },
+  { name: 'Abah', tag: 'Sang Ayah, Penjaga Keluarga', wp: 'Pecutan Sarung', sp: 'Pecutan Maut', c: '#4da3ff', fx: '#ffa53a', hp: 140, spd: 100, dmg: 13, reach: 66, cd: 0.32, sr: 140, sm: 2.5 },
+  { name: 'Ema', tag: 'Sang Ibu, Sumber Kekuatan', wp: 'Sepatula & Panci', sp: 'Dapur Mematikan', c: '#b36bff', fx: '#c77dff', hp: 120, spd: 115, dmg: 12, reach: 48, cd: 0.27, sr: 115, sm: 2.2, heal: 25 },
+  { name: 'Rhe~jab', tag: 'Anak Pertama, Penuh Semangat', wp: 'Golok', sp: 'Tebasan Kilat', c: '#3ddc4a', fx: '#bfe3ff', hp: 100, spd: 150, dmg: 11, reach: 54, cd: 0.2, sr: 130, sm: 3 },
+  { name: 'Yhud~haaa', tag: 'Si Bungsu, Penuh Cahaya', wp: 'Pentungan Lightstick', sp: 'Cahaya Penuntun', c: '#f5a623', fx: '#ff4b3a', hp: 85, spd: 160, dmg: 9, reach: 0, cd: 0.26, sr: 170, sm: 2.5, full: 1 },
 ];
 
 export function newPlayer(i) {
   const c = CHARS[i];
-  return { ch: c, x: 100, y: 360, z: 0, vz: 0, f: 1, hp: c.hp, max: c.hp, lives: 3, atkT: 0, cdT: 0, combo: 0, comboT: 0, inv: 0, hurtT: 0, spT: 0, spCD: 0, w: 0, deadT: 0 };
+  return { ch: c, x: 100, y: 360, z: 0, vz: 0, f: 1, hp: c.hp, max: c.hp, lives: 3, atkT: 0, cdT: 0, combo: 0, comboT: 0, af: 'atk1', mv: false, inv: 0, hurtT: 0, spT: 0, spCD: 0, w: 0, deadT: 0 };
 }
 
 export function updatePlayer(G, dt, inp) {
@@ -21,7 +22,7 @@ export function updatePlayer(G, dt, inp) {
     const s = c.spd * (p.atkT > 0 && p.z === 0 ? 0.3 : 1);
     p.x += dx * s * dt; p.y += dy * s * 0.7 * dt;
     if (Math.abs(dx) > 0.2) p.f = dx > 0 ? 1 : -1;
-    if (m > 0.15) p.w += dt * 10;
+    p.mv = m > 0.15; if (p.mv) p.w += dt * 10;
     if (inp.jump && p.z === 0) p.vz = 330;
     if (inp.atk && p.cdT <= 0) doAttack(G);
     if (inp.sp && p.spCD <= 0) doSpecial(G);
@@ -45,10 +46,17 @@ export function drawMan(ctx, o, col, hair, sc = 1, skin = '#f1c27d') {
   ctx.restore();
 }
 
-export function drawPlayer(ctx, p, t) {
+export function drawPlayer(ctx, p, t, idx) {
   if (p.inv > 0 && p.hp > 0 && Math.floor(t * 16) % 2) return;
   ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(p.x, p.y, 18, 5, 0, 0, 7); ctx.fill();
+  let n = 'idle';
+  if (p.hp <= 0 || p.hurtT > 0) n = 'hurt';
+  else if (p.spT > 0) n = 'atk3';
+  else if (p.atkT > 0) n = p.z > 8 ? 'atk2' : p.af;
+  else if (p.z > 0) n = 'jump';
+  else if (p.mv) n = Math.floor(p.w / 2) % 2 ? 'walk1' : 'walk0';
   if (p.hp <= 0) { ctx.translate(p.x, p.y); ctx.rotate(-1.4 * p.f); ctx.translate(-p.x, -p.y); ctx.globalAlpha = 0.7; }
-  drawMan(ctx, { x: p.x, y: p.y, z: p.z, f: p.f, w: p.w, atk: p.atkT > 0 || p.spT > 0, kick: p.z > 8 && p.atkT > 0 }, p.ch.c, p.ch.hair);
+  drawHeroAt(ctx, idx, n, p.x, p.y - p.z, p.f, 2);
   ctx.restore();
 }

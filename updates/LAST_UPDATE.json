@@ -1,6 +1,9 @@
 {
-  "applied_at": "2026-11-22T19:08:07.927191+00:00",
-  "added": [],
+  "applied_at": "2026-11-22T19:16:40.429239+00:00",
+  "added": [
+    "assets/backgrounds/splash.jpg",
+    "src/sprites.js"
+  ],
   "replaced": [
     "index.html",
     "src/boss.js",

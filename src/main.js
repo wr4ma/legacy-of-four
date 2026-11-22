@@ -17,7 +17,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function step(dt) {
   pollInput(); G.t += dt;
   const ok = input.nav === 'ok' || input.tap;
-  if (G.state === 'splash') { if (ok) G.state = 'select'; return; }
+  if (G.state === 'splash') { if (ok || input.any || input.nav) G.state = 'select'; return; }
   if (G.state === 'select') {
     if (input.nav === 'left') G.sel = (G.sel + 3) % 4;
     if (input.nav === 'right') G.sel = (G.sel + 1) % 4;
@@ -55,11 +55,13 @@ function draw() {
   drawBG(ctx, G);
   ctx.save(); ctx.translate(-G.cam, 0);
   const list = G.ents.map(e => ({ y: e.y, f: () => drawEnemy(ctx, e, G.t) }));
-  list.push({ y: G.p.y, f: () => drawPlayer(ctx, G.p, G.t) });
+  list.push({ y: G.p.y, f: () => drawPlayer(ctx, G.p, G.t, G.sel) });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   ctx.fillStyle = '#fff';
-  for (const s of G.shots) { ctx.fillStyle = G.p.ch.c; ctx.beginPath(); ctx.arc(s.x, s.y - 40 - s.z, 8, 0, 7); ctx.fill(); }
-  for (const f of G.fx) { const k = 1 - f.t / f.max; ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.c; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * k, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+  for (const s of G.shots) { ctx.fillStyle = G.p.ch.fx; ctx.beginPath(); ctx.arc(s.x, s.y - 40 - s.z, 8, 0, 7); ctx.fill(); }
+  for (const f of G.fx) {
+    const k = 1 - f.t / f.max;
+    if (f.sp) { ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.d, 1); for (let i = 0; i < 3; i++) { ctx.globalAlpha = (1 - k) * (1 - i * 0.25); ctx.strokeStyle = i ? f.c : '#fff'; ctx.lineWidth = 14 - i * 4; ctx.beginPath(); ctx.arc(0, 0, f.r * (0.5 + k * 0.5) + i * 6, -f.a, f.a); ctx.stroke(); } ctx.restore(); ctx.globalAlpha = 1; continue; } ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.c; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * k, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
   ctx.restore();
   drawHUD(ctx, G); drawOverlay(ctx, G);
 }

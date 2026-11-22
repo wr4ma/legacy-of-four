@@ -42,7 +42,7 @@ export function updateEnemies(G, dt) {
 function drawRaptor(ctx, e, col) {
   ctx.save(); ctx.translate(e.x, e.y);
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 6, 0, 0, 7); ctx.fill();
-  ctx.translate(0, -e.z); ctx.scale(e.f, 1);
+  ctx.translate(0, -e.z); ctx.scale(e.f * 1.3, 1.3);
   const s = Math.sin(e.w) * 5;
   ctx.fillStyle = col;
   ctx.beginPath(); ctx.ellipse(0, -28, 20, 11, -0.2, 0, 7); ctx.fill();
@@ -62,6 +62,6 @@ export function drawEnemy(ctx, e, t) {
   if (e.hp <= 0) ctx.globalAlpha = Math.floor(t * 20) % 2 ? 0.2 : 0.7;
   const col = e.hurtT > 0 ? '#fff' : e.col;
   if (e.rap) drawRaptor(ctx, e, col);
-  else drawMan(ctx, { x: e.x, y: e.y, z: e.z, f: e.f, w: e.w, atk: e.aT > 0 }, col, '#222', e.sc, '#9ccc65');
+  else drawMan(ctx, { x: e.x, y: e.y, z: e.z, f: e.f, w: e.w, atk: e.aT > 0 }, col, '#222', e.sc * 1.35, '#9ccc65');
   ctx.restore();
 }
