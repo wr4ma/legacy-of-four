@@ -1,0 +1,24 @@
+{
+  "applied_at": "2026-11-22T18:59:22.835203+00:00",
+  "added": [
+    ".nojekyll",
+    "assets/audio/.gitkeep",
+    "assets/backgrounds/.gitkeep",
+    "assets/characters/.gitkeep",
+    "assets/effects/.gitkeep",
+    "assets/enemies/.gitkeep",
+    "index.html",
+    "package.json",
+    "src/boss.js",
+    "src/combat.js",
+    "src/controls.js",
+    "src/enemy.js",
+    "src/level.js",
+    "src/main.js",
+    "src/player.js",
+    "src/ui.js",
+    "styles/game.css"
+  ],
+  "replaced": [],
+  "protected_skipped": []
+}
