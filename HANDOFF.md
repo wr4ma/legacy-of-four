@@ -60,6 +60,12 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
   tidak sesuai splash (kampung/jalan sore, papan "Bersama Selalu", grafiti "Legacy Never Fades").
 - Belum ada: suara/musik, item pemulih, jeda/pause, 2 pemain.
 
+## 5b. Layout UX (terbaru)
+- `index.html`: `#stage` (judul "LEGACY OF FOUR" + bezel `#screen` berisi canvas) dan `#touch` (panel arcade). Semua ukuran pakai variabel `--u` (≈1px di lebar 390) di `styles/game.css`.
+- Portrait sentuh: judul + layar di tengah area atas, panel arcade di bawah: joystick bola merah kiri; tombol miring naik ke kanan (Attack besar merah, Jump biru, Special kuning). Landscape sentuh: layar penuh, kontrol (opacity .6) melayang DI DALAM area canvas (`#touch` disamakan ukurannya dengan canvas via `--w`), judul disembunyikan. Desktop: kontrol sentuh disembunyikan, judul tetap tampil.
+- Zoom dimatikan di `controls.js` (gesturestart/gesturechange, dblclick, touchmove, double-tap touchend preventDefault) + `touch-action:none` di CSS.
+- `controls.js`: tombol punya kelas `.on` saat ditekan; knob visual bergerak 55% dari radius.
+
 ## 6. Rencana lanjutan (urut prioritas)
 1. ~~Pemuat sprite sheet~~ **SELESAI** (`src/spritesheets.js`: `drawChar`, `pickFrame`; otomatis pakai `assets/characters/<id>.png` bila ada, per karakter, kalau tidak pakai sprite kode). Tinggal menunggu PNG asli user. Diuji di Chromium dengan sheet tes (abah) + 3 karakter fallback.
 2. Pemuat **efek** (spritesheet) menggantikan busur garis di `main.js` (blok `f.sp`) + efek hit/ledakan/debu.

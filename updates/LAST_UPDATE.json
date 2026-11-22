@@ -1,7 +1,9 @@
 {
-  "applied_at": "2026-11-22T19:42:55.011309+00:00",
-  "added": [
+  "applied_at": "2026-11-22T19:54:15.446317+00:00",
+  "added": [],
+  "replaced": [
     "HANDOFF.md",
+    "assets/backgrounds/splash.jpg",
     "assets/characters/abah.png",
     "assets/characters/ema.png",
     "assets/characters/rhejab.png",
@@ -10,10 +12,6 @@
     "assets/effects/fx_ema_special.png",
     "assets/effects/fx_rhejab_special.png",
     "assets/effects/fx_yhudhaaa_special.png",
-    "src/spritesheets.js"
-  ],
-  "replaced": [
-    "assets/backgrounds/splash.jpg",
     "index.html",
     "package.json",
     "src/boss.js",
@@ -24,6 +22,7 @@
     "src/main.js",
     "src/player.js",
     "src/sprites.js",
+    "src/spritesheets.js",
     "src/ui.js",
     "styles/game.css"
   ],

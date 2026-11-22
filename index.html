@@ -3,18 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#101018">
+<meta name="theme-color" content="#0b0b14">
 <title>Legacy of Four</title>
 <link rel="stylesheet" href="styles/game.css">
 </head>
 <body>
-<canvas id="game"></canvas>
+<div id="stage">
+  <header id="title">
+    <h1>LEGACY <span>OF</span> FOUR</h1>
+    <div class="bar"><i></i><i></i><i></i><i></i></div>
+  </header>
+  <div id="screen"><canvas id="game"></canvas></div>
+</div>
 <div id="touch">
   <div id="stick"><div id="knob"></div></div>
   <div id="btns">
-    <button id="btnSp">Special</button>
-    <button id="btnJump">Jump</button>
-    <button id="btnAtk">Attack</button>
+    <button id="btnAtk"><b>ATTACK</b></button>
+    <button id="btnJump"><b>JUMP</b></button>
+    <button id="btnSp"><b>SPECIAL</b></button>
   </div>
 </div>
 <script type="module" src="src/main.js"></script>

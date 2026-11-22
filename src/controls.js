@@ -4,6 +4,12 @@ const MAP = { KeyJ: 'atk', KeyZ: 'atk', Space: 'atk', KeyK: 'jump', KeyX: 'jump'
 const NAV = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Enter: 'ok', Space: 'ok' };
 
 export function initControls(cv) {
+  // matikan zoom (double-tap, pinch) di iOS/Brave
+  const stop = e => e.preventDefault();
+  for (const ev of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) document.addEventListener(ev, stop, { passive: false });
+  document.addEventListener('touchmove', stop, { passive: false });
+  let lastTap = 0;
+  document.addEventListener('touchend', e => { const n = Date.now(); if (n - lastTap < 400) e.preventDefault(); lastTap = n; }, { passive: false });
   addEventListener('keydown', e => {
     if (NAV[e.code] || e.code.startsWith('Arrow')) e.preventDefault();
     k[e.code] = 1; if (e.repeat) return; edge.any = 1;
@@ -17,13 +23,14 @@ export function initControls(cv) {
     edge.tap = { x: (e.clientX - r.left) / r.width * 800, y: (e.clientY - r.top) / r.height * 450 };
   });
   for (const [id, n] of [['btnAtk', 'atk'], ['btnJump', 'jump'], ['btnSp', 'sp']])
-    document.getElementById(id).addEventListener('pointerdown', e => { e.preventDefault(); edge[n] = 1; edge.nav = 'ok'; });
+    { const b = document.getElementById(id); b.addEventListener('pointerdown', e => { e.preventDefault(); edge[n] = 1; edge.nav = 'ok'; b.classList.add('on'); });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => b.classList.remove('on')); }
   const st = document.getElementById('stick'), knob = document.getElementById('knob');
   const move = e => {
     const r = st.getBoundingClientRect(), R = r.width / 2;
     let x = e.clientX - (r.left + R), y = e.clientY - (r.top + R); const m = Math.hypot(x, y);
     if (m > R) { x = x / m * R; y = y / m * R; }
-    stick.dx = x / R; stick.dy = y / R; knob.style.transform = `translate(${x}px,${y}px)`;
+    stick.dx = x / R; stick.dy = y / R; knob.style.transform = `translate(${x * 0.55}px,${y * 0.55}px)`;
   };
   const end = () => { stick.dx = stick.dy = 0; stick.id = null; knob.style.transform = ''; };
   st.addEventListener('pointerdown', e => { e.preventDefault(); stick.id = e.pointerId; st.setPointerCapture(e.pointerId); move(e); });
