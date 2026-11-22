@@ -1,10 +1,8 @@
 {
-  "applied_at": "2026-11-22T19:16:40.429239+00:00",
-  "added": [
-    "assets/backgrounds/splash.jpg",
-    "src/sprites.js"
-  ],
+  "applied_at": "2026-11-22T19:20:08.434485+00:00",
+  "added": [],
   "replaced": [
+    "assets/backgrounds/splash.jpg",
     "index.html",
     "src/boss.js",
     "src/combat.js",
@@ -13,6 +11,7 @@
     "src/level.js",
     "src/main.js",
     "src/player.js",
+    "src/sprites.js",
     "src/ui.js",
     "styles/game.css"
   ],
