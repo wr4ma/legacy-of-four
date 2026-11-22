@@ -10,7 +10,7 @@ export const CHARS = [
 
 export function newPlayer(i) {
   const c = CHARS[i];
-  return { ch: c, x: 100, y: 360, z: 0, vz: 0, f: 1, hp: c.hp, max: c.hp, lives: 3, atkT: 0, cdT: 0, combo: 0, comboT: 0, af: 'atk1', mv: false, inv: 0, hurtT: 0, spT: 0, spCD: 0, w: 0, deadT: 0 };
+  return { ch: c, x: 190, y: 360, z: 0, vz: 0, f: 1, hp: c.hp, max: c.hp, lives: 3, atkT: 0, cdT: 0, combo: 0, comboT: 0, af: 'atk1', mv: false, inv: 0, hurtT: 0, spT: 0, spCD: 0, w: 0, deadT: 0 };
 }
 
 export function updatePlayer(G, dt, inp) {

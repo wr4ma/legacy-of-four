@@ -11,28 +11,31 @@ body{display:flex;flex-direction:column;touch-action:none;padding-top:env(safe-a
 #title .bar{display:flex;height:calc(var(--u)*4);width:calc(var(--u)*230);margin:calc(var(--u)*8) auto 0;border-radius:4px;overflow:hidden;opacity:.95}
 #title .bar i{flex:1}
 #title .bar i:nth-child(1){background:#4da3ff}#title .bar i:nth-child(2){background:#b36bff}#title .bar i:nth-child(3){background:#3ddc4a}#title .bar i:nth-child(4){background:#f5a623}
-#screen{width:min(calc(100vw - 16px),calc((100dvh - var(--reserve)) * 1.7778));padding:calc(var(--u)*4);border-radius:12px;background:linear-gradient(#2b2b44,#14141f);box-shadow:0 0 0 2px #05050a,0 8px 28px rgba(0,0,0,.65),0 0 24px rgba(255,170,60,.12)}
+#screen{position:relative;width:min(calc(100vw - 16px),calc((100dvh - var(--reserve)) * 1.7778));padding:calc(var(--u)*4);border-radius:12px;background:linear-gradient(#2b2b44,#14141f);box-shadow:0 0 0 2px #05050a,0 8px 28px rgba(0,0,0,.65),0 0 24px rgba(255,170,60,.12)}
 #game{width:100%;aspect-ratio:16/9;background:#000;display:block;border-radius:6px;touch-action:none}
 
 /* ---- panel arcade (sentuh) ---- */
 #touch{flex:none;height:calc(var(--u)*236 + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;padding:calc(var(--u)*10) calc(var(--u)*22) env(safe-area-inset-bottom);touch-action:none;
   background:linear-gradient(#1c1c2c,#10101a);border-top:calc(var(--u)*3) solid #2f2f4a;border-radius:calc(var(--u)*22) calc(var(--u)*22) 0 0;box-shadow:0 -6px 22px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.07)}
-#stick{position:relative;flex:none;width:calc(var(--u)*150);height:calc(var(--u)*150);border-radius:50%;touch-action:none;
+#stick{position:relative;flex:none;width:calc(var(--u)*140);height:calc(var(--u)*140);border-radius:50%;touch-action:none;
   background:radial-gradient(circle at 50% 50%,#0c0c14 0 36%,#1a1a28 37% 62%,#262638 63% 100%);border:calc(var(--u)*3) solid #05050a;box-shadow:inset 0 0 0 calc(var(--u)*3) #3a3a56,0 4px 10px rgba(0,0,0,.6)}
 #knob{position:absolute;left:50%;top:50%;width:calc(var(--u)*66);height:calc(var(--u)*66);margin:calc(var(--u)*-33) 0 0 calc(var(--u)*-33);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle at 35% 30%,#ff8a8a,#e22b2b 45%,#8e1010);box-shadow:0 calc(var(--u)*6) calc(var(--u)*8) rgba(0,0,0,.6),inset 0 calc(var(--u)*-4) calc(var(--u)*6) rgba(0,0,0,.35)}
 
-/* tombol miring ke atas ke kanan, ala arcade */
-#btns{position:relative;flex:none;width:calc(var(--u)*212);height:calc(var(--u)*170)}
+/* tombol arcade: segitiga, tidak saling tindih (Jump kiri-atas, Special kanan-atas, Attack besar di bawah) */
+#btns{position:relative;flex:none;width:calc(var(--u)*190);height:calc(var(--u)*194)}
 #btns button{position:absolute;border-radius:50%;border:calc(var(--u)*3) solid rgba(0,0,0,.55);color:#fff;font:800 calc(var(--u)*11)/1 system-ui,sans-serif;letter-spacing:.04em;touch-action:none;padding:0;
-  box-shadow:0 calc(var(--u)*6) 0 var(--d),0 calc(var(--u)*9) calc(var(--u)*10) rgba(0,0,0,.55),inset 0 calc(var(--u)*3) calc(var(--u)*5) rgba(255,255,255,.4);
+  box-shadow:0 calc(var(--u)*5) 0 var(--d),0 calc(var(--u)*8) calc(var(--u)*9) rgba(0,0,0,.55),inset 0 calc(var(--u)*3) calc(var(--u)*5) rgba(255,255,255,.4);
   background:radial-gradient(circle at 38% 30%,var(--l),var(--c) 55%,var(--d));transition:transform .04s,box-shadow .04s}
 #btns button b{text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
 #btns button:active,#btns button.on{transform:translateY(calc(var(--u)*5));box-shadow:0 calc(var(--u)*1) 0 var(--d),inset 0 calc(var(--u)*3) calc(var(--u)*8) rgba(0,0,0,.35);filter:brightness(1.15)}
-#btnAtk{--l:#ff8f8f;--c:#e5303a;--d:#7d1017;left:0;top:calc(var(--u)*64);width:calc(var(--u)*92);height:calc(var(--u)*92);font-size:calc(var(--u)*13)!important}
-#btnJump{--l:#8fc0ff;--c:#2f7bff;--d:#143f93;left:calc(var(--u)*96);top:calc(var(--u)*34);width:calc(var(--u)*70);height:calc(var(--u)*70)}
-#btnSp{--l:#ffe38a;--c:#ffb400;--d:#8a5a00;color:#2a1a00!important;left:calc(var(--u)*142);top:calc(var(--u)*-2);width:calc(var(--u)*70);height:calc(var(--u)*70)}
+#btnJump{--l:#8fc0ff;--c:#2f7bff;--d:#143f93;left:0;top:calc(var(--u)*22);width:calc(var(--u)*66);height:calc(var(--u)*66)}
+#btnSp{--l:#ffe38a;--c:#ffb400;--d:#8a5a00;color:#2a1a00!important;left:calc(var(--u)*118);top:0;width:calc(var(--u)*66);height:calc(var(--u)*66)}
 #btnSp b{text-shadow:none}
+#btnAtk{--l:#ff8f8f;--c:#e5303a;--d:#7d1017;left:calc(var(--u)*54);top:calc(var(--u)*100);width:calc(var(--u)*90);height:calc(var(--u)*90);font-size:calc(var(--u)*13)}
+
+#fs{display:none;position:absolute;right:1.5%;top:11%;width:calc(var(--u)*36);height:calc(var(--u)*36);border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.4);color:#fff;font-size:calc(var(--u)*20);line-height:1;padding:0;touch-action:none;z-index:3}
+@media (pointer:fine){#fs{display:none!important}}
 
 /* ---- desktop (mouse/keyboard) ---- */
 @media (pointer:fine){#touch{display:none}:root{--reserve:130px}#stage{padding-top:0}}
@@ -40,15 +43,18 @@ body{display:flex;flex-direction:column;touch-action:none;padding-top:env(safe-a
 /* ---- HP: sentuh portrait cadangkan ruang panel + judul ---- */
 @media (pointer:coarse) and (orientation:portrait){:root{--reserve:calc(var(--u)*236 + var(--u)*110 + env(safe-area-inset-bottom))}}
 
-/* ---- sentuh landscape: kontrol melayang DI DALAM area game ---- */
+/* ---- sentuh landscape: layar penuh, kontrol melayang di dalam game ---- */
 @media (pointer:coarse) and (orientation:landscape){
-  :root{--w:min(100vw,calc(100dvh * 1.7778));--u:calc(var(--w) * .5625 / 600);--reserve:0px}
-  body{padding:0}
+  :root{--u:calc(100dvh / 540)}
+  html,body{position:fixed;inset:0;width:100%;height:100%;padding:0}
   #title{display:none}
-  #stage{padding:0;gap:0}
-  #screen{padding:0;border-radius:0;background:none;box-shadow:none;width:var(--w)}
-  #game{border-radius:0}
-  #touch{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--w);height:calc(var(--w) * .5625);
-    background:none;border:0;box-shadow:none;border-radius:0;pointer-events:none;padding:calc(var(--u)*14);align-items:flex-end}
+  #stage{position:fixed;inset:0;padding:0;gap:0;justify-content:center;align-items:center}
+  #screen{width:100vw;height:100dvh;padding:0;border-radius:0;background:none;box-shadow:none}
+  #game{width:100%;height:100%;aspect-ratio:auto;object-fit:contain;border-radius:0}
+  #touch{position:fixed;inset:0;width:auto;height:auto;transform:none;background:none;border:0;box-shadow:none;border-radius:0;pointer-events:none;align-items:flex-end;
+    padding:0 calc(env(safe-area-inset-right) + var(--u)*22) calc(env(safe-area-inset-bottom) + var(--u)*16) calc(env(safe-area-inset-left) + var(--u)*22)}
   #stick,#btns{pointer-events:auto;opacity:.6}
+  #fs{right:calc(env(safe-area-inset-right) + 10px);top:calc(100dvh * .11)}
+  /* menu: sembunyikan kontrol melayang agar tidak menutupi kartu; ketuk layar saja */
+  body[data-state=splash] #touch,body[data-state=select] #touch,body[data-state=over] #touch,body[data-state=win] #touch{visibility:hidden}
 }

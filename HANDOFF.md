@@ -62,7 +62,8 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 
 ## 5b. Layout UX (terbaru)
 - `index.html`: `#stage` (judul "LEGACY OF FOUR" + bezel `#screen` berisi canvas) dan `#touch` (panel arcade). Semua ukuran pakai variabel `--u` (≈1px di lebar 390) di `styles/game.css`.
-- Portrait sentuh: judul + layar di tengah area atas, panel arcade di bawah: joystick bola merah kiri; tombol miring naik ke kanan (Attack besar merah, Jump biru, Special kuning). Landscape sentuh: layar penuh, kontrol (opacity .6) melayang DI DALAM area canvas (`#touch` disamakan ukurannya dengan canvas via `--w`), judul disembunyikan. Desktop: kontrol sentuh disembunyikan, judul tetap tampil.
+- Portrait sentuh: judul + layar di tengah area atas, panel arcade di bawah: joystick bola merah kiri; tombol miring naik ke kanan (Attack besar merah, Jump biru, Special kuning). Landscape sentuh: **layar penuh tanpa bar hitam** — lebar logis canvas adaptif (`fit()` di main.js: 800..1080 px, tinggi tetap 450; `G.W` dipakai kamera/spawn/HUD; menu digeser ke tengah dengan offset `(G.W-800)/2`), kontrol melayang (opacity .6) di dalam game, disembunyikan saat menu (`body[data-state]`), judul disembunyikan. Tombol ⛶ (fullscreen API) hanya muncul di browser yang mendukung (bukan iPhone). Untuk fullscreen sejati di iPhone: Share → Tambah ke Layar Utama (ada meta apple-mobile-web-app-capable, `assets/manifest.webmanifest`, ikon di `assets/icons/`).
+- Tombol arcade: Jump kiri-atas, Special kanan-atas, Attack besar di bawah (tidak tindih). Pemain spawn di x=190 agar tidak tertutup joystick. Desktop: kontrol sentuh disembunyikan, judul tetap tampil.
 - Zoom dimatikan di `controls.js` (gesturestart/gesturechange, dblclick, touchmove, double-tap touchend preventDefault) + `touch-action:none` di CSS.
 - `controls.js`: tombol punya kelas `.on` saat ditekan; knob visual bergerak 55% dari radius.
 

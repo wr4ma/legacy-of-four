@@ -1,6 +1,11 @@
 {
-  "applied_at": "2026-11-22T19:54:15.446317+00:00",
-  "added": [],
+  "applied_at": "2026-11-22T20:03:34.288406+00:00",
+  "added": [
+    "assets/icons/icon-180.png",
+    "assets/icons/icon-192.png",
+    "assets/icons/icon-512.png",
+    "assets/manifest.webmanifest"
+  ],
   "replaced": [
     "HANDOFF.md",
     "assets/backgrounds/splash.jpg",

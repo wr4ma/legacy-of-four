@@ -16,8 +16,11 @@ export function cardHit(x, y) {
 const splash = new Image(); splash.src = 'assets/backgrounds/splash.jpg';
 
 export function drawSplash(ctx, G) {
-  if (splash.complete && splash.naturalWidth) ctx.drawImage(splash, 0, 0, G.W, G.H);
-  else { ctx.fillStyle = '#2b1055'; ctx.fillRect(0, 0, G.W, G.H); T(ctx, 'LEGACY OF FOUR', 400, 220, 60, '#ffd23f'); T(ctx, 'PRESS ANY KEY TO CONTINUE', 400, 400, 20); }
+  const ox = (G.W - 800) / 2;
+  if (splash.complete && splash.naturalWidth) {
+    if (ox > 0) { const h = G.W * 9 / 16; ctx.drawImage(splash, 0, (G.H - h) / 2, G.W, h); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, G.W, G.H); }
+    ctx.drawImage(splash, ox, 0, 800, G.H);
+  } else { ctx.fillStyle = '#2b1055'; ctx.fillRect(0, 0, G.W, G.H); T(ctx, 'LEGACY OF FOUR', G.W / 2, 220, 60, '#ffd23f'); T(ctx, 'PRESS ANY KEY TO CONTINUE', G.W / 2, 400, 20); }
 }
 
 export function drawSelect(ctx, G) {
@@ -25,6 +28,7 @@ export function drawSelect(ctx, G) {
   ctx.strokeStyle = 'rgba(80,120,255,.12)'; ctx.lineWidth = 1;
   for (let x = 0; x < G.W; x += 25) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, G.H); ctx.stroke(); }
   for (let y = 0; y < G.H; y += 25) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(G.W, y); ctx.stroke(); }
+  ctx.save(); ctx.translate((G.W - 800) / 2, 0);
   T(ctx, 'SELECT YOUR FIGHTER', 400, 62, 38, '#ffd23f');
   CHARS.forEach((c, i) => {
     const x = cardX(i), sel = i === G.sel, cx = x + 85;
@@ -42,6 +46,7 @@ export function drawSelect(ctx, G) {
     if (c.reach === 0) T(ctx, 'RANGED', cx, 378, 9, '#fff');
   });
   T(ctx, 'Tap a card, tap again to start  ·  ←/→ + Enter', 400, 416, 15, '#aab');
+  ctx.restore();
 }
 
 export function drawHUD(ctx, G) {
@@ -53,15 +58,15 @@ export function drawHUD(ctx, G) {
   ctx.fillStyle = '#123'; ctx.fillRect(58, 48, 170, 6); ctx.fillStyle = '#4cf'; ctx.fillRect(58, 48, 170 * (1 - Math.max(0, p.spCD) / 6), 6);
   T(ctx, `SCORE ${G.score}`, G.W - 14, 30, 22, '#fff', 'right');
   const b = G.ents.find(e => e.boss && e.hp > 0);
-  if (b) { T(ctx, 'THE TYRANT', 400, 36, 16, '#f66'); ctx.fillStyle = '#300'; ctx.fillRect(250, 42, 300, 12); ctx.fillStyle = '#e63946'; ctx.fillRect(250, 42, 300 * b.hp / b.max, 12); }
+  if (b) { const bx = G.W / 2 - 150; T(ctx, 'THE TYRANT', G.W / 2, 36, 16, '#f66'); ctx.fillStyle = '#300'; ctx.fillRect(bx, 42, 300, 12); ctx.fillStyle = '#e63946'; ctx.fillRect(bx, 42, 300 * b.hp / b.max, 12); }
   if (G.go > 0 && Math.floor(G.t * 3) % 2) T(ctx, 'GO ➜', G.W - 70, 220, 40, '#ffd23f');
-  if (G.sk && G.sk.t > 0) T(ctx, G.sk.s.toUpperCase() + '!', 400, 120, 36, G.sk.c);
-  if (G.title > 0) T(ctx, STAGES[G.stage].name.toUpperCase(), 400, 190, 44, '#fff');
+  if (G.sk && G.sk.t > 0) T(ctx, G.sk.s.toUpperCase() + '!', G.W / 2, 120, 36, G.sk.c);
+  if (G.title > 0) T(ctx, STAGES[G.stage].name.toUpperCase(), G.W / 2, 190, 44, '#fff');
 }
 
 export function drawOverlay(ctx, G) {
   const M = { over: ['GAME OVER', `Score ${G.score}`, 'Tap or press Enter'], win: ['LEGACY SECURED!', `Score ${G.score}`, 'Tap or press Enter'], clear: ['STAGE CLEAR', `Score ${G.score}`, ''] }[G.state];
   if (!M) return;
   ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, G.W, G.H);
-  T(ctx, M[0], 400, 210, 64, '#ffd23f'); T(ctx, M[1], 400, 260, 28); T(ctx, M[2], 400, 310, 22);
+  const cx = G.W / 2; T(ctx, M[0], cx, 210, 64, '#ffd23f'); T(ctx, M[1], cx, 260, 28); T(ctx, M[2], cx, 310, 22);
 }

@@ -20,11 +20,23 @@ export function initControls(cv) {
   addEventListener('blur', () => { for (const c in k) k[c] = 0; });
   cv.addEventListener('pointerdown', e => {
     const r = cv.getBoundingClientRect();
-    edge.tap = { x: (e.clientX - r.left) / r.width * 800, y: (e.clientY - r.top) / r.height * 450 };
+    edge.tap = { x: (e.clientX - r.left) / r.width * cv.width, y: (e.clientY - r.top) / r.height * cv.height };
   });
   for (const [id, n] of [['btnAtk', 'atk'], ['btnJump', 'jump'], ['btnSp', 'sp']])
     { const b = document.getElementById(id); b.addEventListener('pointerdown', e => { e.preventDefault(); edge[n] = 1; edge.nav = 'ok'; b.classList.add('on'); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => b.classList.remove('on')); }
+  const fs = document.getElementById('fs'), de = document.documentElement;
+  const canFs = !!(de.requestFullscreen || de.webkitRequestFullscreen) && (document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  if (fs && canFs) {
+    fs.style.display = 'block';
+    fs.addEventListener('pointerdown', async e => {
+      e.preventDefault(); e.stopPropagation();
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        else { await (de.requestFullscreen || de.webkitRequestFullscreen).call(de); try { await screen.orientation.lock('landscape'); } catch (_) {} }
+      } catch (_) {}
+    });
+  }
   const st = document.getElementById('stick'), knob = document.getElementById('knob');
   const move = e => {
     const r = st.getBoundingClientRect(), R = r.width / 2;

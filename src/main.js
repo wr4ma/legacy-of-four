@@ -5,11 +5,20 @@ import { updateShots } from './combat.js';
 import { STAGES, startStage, updateLevel, drawBG } from './level.js';
 import { drawSplash, drawSelect, drawHUD, drawOverlay, cardHit } from './ui.js';
 
-const W = 800, H = 450;
+const H = 450;
 const cv = document.getElementById('game'), ctx = cv.getContext('2d');
-cv.width = W; cv.height = H;
-const G = { W, H, state: 'splash', t: 0, sel: 0, stage: 0, cam: 0, score: 0, wi: 0, go: 0, title: 0, t2: 0, locked: false, shake: 0, ents: [], shots: [], fx: [], p: null };
+cv.width = 800; cv.height = H;
+const G = { W: 800, H, state: 'splash', t: 0, sel: 0, stage: 0, cam: 0, score: 0, wi: 0, go: 0, title: 0, t2: 0, locked: false, shake: 0, ents: [], shots: [], fx: [], p: null };
 initControls(cv);
+
+// Lebar logis menyesuaikan layar HP landscape (tanpa bar hitam): 800 (16:9) sampai 1080 (2.4:1).
+const landMQ = matchMedia('(pointer:coarse) and (orientation:landscape)');
+function fit() {
+  let w = 800;
+  if (landMQ.matches) w = Math.round(H * Math.max(16 / 9, Math.min(2.4, innerWidth / innerHeight)));
+  if (cv.width !== w) { cv.width = w; G.W = w; }
+}
+fit(); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 120));
 
 function begin() { G.p = newPlayer(G.sel); G.score = 0; startStage(G, 0); G.state = 'play'; }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -22,7 +31,7 @@ function step(dt) {
     if (input.nav === 'left') G.sel = (G.sel + 3) % 4;
     if (input.nav === 'right') G.sel = (G.sel + 1) % 4;
     if (input.nav === 'ok') begin();
-    if (input.tap) { const i = cardHit(input.tap.x, input.tap.y); if (i === G.sel) begin(); else if (i >= 0) G.sel = i; }
+    if (input.tap) { const i = cardHit(input.tap.x - (G.W - 800) / 2, input.tap.y); if (i === G.sel) begin(); else if (i >= 0) G.sel = i; }
     return;
   }
   if (G.state === 'over' || G.state === 'win') { if (ok) { G.state = 'splash'; G.sel = 0; } return; }
@@ -33,8 +42,8 @@ function step(dt) {
   }
   const p = G.p, S = STAGES[G.stage];
   updatePlayer(G, dt, input);
-  if (!G.locked) G.cam = Math.max(G.cam, Math.min(p.x - W / 2, S.len - W));
-  p.x = clamp(p.x, G.cam + 20, G.cam + W - 20);
+  if (!G.locked) G.cam = Math.max(G.cam, Math.min(p.x - G.W / 2, S.len - G.W));
+  p.x = clamp(p.x, G.cam + 20, G.cam + G.W - 20);
   updateEnemies(G, dt); updateShots(G, dt); updateLevel(G, dt);
   G.shake = Math.max(0, G.shake - dt);
   if (p.hp <= 0 && G.state === 'play') {
@@ -42,12 +51,13 @@ function step(dt) {
     if (p.deadT > 1.5) {
       p.lives--;
       if (p.lives <= 0) G.state = 'over';
-      else { p.hp = p.max; p.inv = 2; p.x = G.cam + 80; p.y = 360; p.z = 0; p.deadT = 0; }
+      else { p.hp = p.max; p.inv = 2; p.x = G.cam + 190; p.y = 360; p.z = 0; p.deadT = 0; }
     }
   }
 }
 
 function draw() {
+  if (document.body.dataset.state !== G.state) document.body.dataset.state = G.state;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (G.state === 'splash') return drawSplash(ctx, G);
   if (G.state === 'select') return drawSelect(ctx, G);
