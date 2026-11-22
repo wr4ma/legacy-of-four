@@ -1,5 +1,5 @@
 import { CHARS } from './player.js';
-import { drawHeroAt } from './sprites.js';
+import { drawChar } from './spritesheets.js';
 import { STAGES } from './level.js';
 
 export function T(ctx, s, x, y, sz, c = '#fff', al = 'center') {
@@ -33,7 +33,7 @@ export function drawSelect(ctx, G) {
     ctx.fillStyle = c.c; ctx.globalAlpha = 0.85; ctx.fillRect(x, 90, 170, 24); ctx.globalAlpha = 1;
     T(ctx, c.name.toUpperCase(), cx, 109, 18, '#fff');
     const fr = sel ? ['idle', 'atk1', 'idle', 'atk2', 'idle', 'atk3'][Math.floor(G.t * 3) % 6] : 'idle';
-    drawHeroAt(ctx, i, fr, cx - 4, 220, 1, 2.2);
+    drawChar(ctx, i, fr, cx - 4, 220, 1, 2.2, { t: G.t, prog: (G.t * 3) % 1 });
     T(ctx, c.tag, cx, 244, 10, '#cfd6ff');
     const bar = (l, v, y) => { T(ctx, l, x + 10, y + 8, 10, '#aab', 'left'); ctx.fillStyle = '#000'; ctx.fillRect(x + 44, y, 116, 8); ctx.fillStyle = c.c; ctx.fillRect(x + 44, y, 116 * Math.min(1, v), 8); };
     bar('HP', c.hp / 140, 254); bar('SPD', c.spd / 160, 268); bar('PWR', c.dmg / 13, 282);
@@ -47,7 +47,7 @@ export function drawSelect(ctx, G) {
 export function drawHUD(ctx, G) {
   const p = G.p, c = p.ch;
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(8, 8, 230, 58);
-  drawHeroAt(ctx, G.sel, 'idle', 30, 62, 1, 0.9);
+  drawChar(ctx, G.sel, 'idle', 30, 62, 1, 0.9, { t: G.t });
   T(ctx, c.name.toUpperCase(), 58, 26, 16, c.c, 'left'); T(ctx, `x${Math.max(p.lives, 0)}`, 228, 26, 16, '#fff', 'right');
   ctx.fillStyle = '#300'; ctx.fillRect(58, 32, 170, 11); ctx.fillStyle = '#f5c518'; ctx.fillRect(58, 32, 170 * Math.max(0, p.hp) / p.max, 11);
   ctx.fillStyle = '#123'; ctx.fillRect(58, 48, 170, 6); ctx.fillStyle = '#4cf'; ctx.fillRect(58, 48, 170 * (1 - Math.max(0, p.spCD) / 6), 6);

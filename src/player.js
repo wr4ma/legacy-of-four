@@ -1,5 +1,5 @@
 import { FT, FB, doAttack, doSpecial } from './combat.js';
-import { drawHeroAt } from './sprites.js';
+import { drawChar, sheetReady } from './spritesheets.js';
 
 export const CHARS = [
   { name: 'Abah', tag: 'Sang Ayah, Penjaga Keluarga', wp: 'Pecutan Sarung', sp: 'Pecutan Maut', c: '#4da3ff', fx: '#ffa53a', hp: 140, spd: 100, dmg: 13, reach: 66, cd: 0.32, sr: 140, sm: 2.5 },
@@ -50,13 +50,16 @@ export function drawPlayer(ctx, p, t, idx) {
   if (p.inv > 0 && p.hp > 0 && Math.floor(t * 16) % 2) return;
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(p.x, p.y, 18, 5, 0, 0, 7); ctx.fill();
-  let n = 'idle';
-  if (p.hp <= 0 || p.hurtT > 0) n = 'hurt';
-  else if (p.spT > 0) n = 'atk3';
-  else if (p.atkT > 0) n = p.z > 8 ? 'atk2' : p.af;
+  const c = p.ch;
+  let n = 'idle', prog = 0;
+  const dead = p.hp <= 0;
+  if (dead || p.hurtT > 0) { n = 'hurt'; prog = 1 - Math.max(0, p.hurtT) / 0.3; }
+  else if (p.spT > 0) { n = 'special'; prog = 1 - p.spT / 0.5; }
+  else if (p.atkT > 0) { n = p.z > 8 ? 'atk2' : p.af; prog = 1 - p.atkT / (c.cd * 0.9); }
   else if (p.z > 0) n = 'jump';
   else if (p.mv) n = Math.floor(p.w / 2) % 2 ? 'walk1' : 'walk0';
-  if (p.hp <= 0) { ctx.translate(p.x, p.y); ctx.rotate(-1.4 * p.f); ctx.translate(-p.x, -p.y); ctx.globalAlpha = 0.7; }
-  drawHeroAt(ctx, idx, n, p.x, p.y - p.z, p.f, 2);
+  const info = { t, w: p.w, prog, vz: p.vz, dead };
+  if (dead && !sheetReady(idx)) { ctx.translate(p.x, p.y); ctx.rotate(-1.4 * p.f); ctx.translate(-p.x, -p.y); ctx.globalAlpha = 0.7; }
+  drawChar(ctx, idx, n, p.x, p.y - p.z, p.f, 2, info);
   ctx.restore();
 }
