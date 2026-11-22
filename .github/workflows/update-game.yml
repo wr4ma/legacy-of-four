@@ -1,0 +1,196 @@
+name: Legacy of Four - Update and Deploy
+
+# Upload updates/legacy-of-four_update.zip -> this workflow validates it, applies it,
+# commits to main, then deploys to GitHub Pages. No other files are needed.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: legacy-of-four
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate and apply update ZIP
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, re, shutil, stat, subprocess, sys, tempfile, zipfile
+          from pathlib import Path, PurePosixPath
+
+          REPO = Path.cwd()
+          ZIP = REPO / "updates" / "legacy-of-four_update.zip"
+          MAX_FILES, MAX_BYTES = 5000, 400 * 1024 * 1024
+          JUNK = ("__MACOSX/", ".DS_Store", "Thumbs.db")
+          KEEP_IF_EXISTS = {"README.md", ".gitignore", ".gitattributes"}
+          ESSENTIAL = ["index.html", "src/main.js"]
+
+          def out(k, v):
+              p = os.environ.get("GITHUB_OUTPUT")
+              if p:
+                  open(p, "a").write(f"{k}={v}\n")
+
+          def summary(t):
+              p = os.environ.get("GITHUB_STEP_SUMMARY")
+              if p:
+                  open(p, "a").write(t + "\n")
+
+          def fail(msg):
+              print(f"::error::UPDATE REJECTED: {msg}")
+              summary(f"### Update rejected\n{msg}\n\nNothing was committed; the live game is unchanged.")
+              sys.exit(1)
+
+          def safe(raw):
+              n = raw.replace("\\", "/")
+              if n.startswith("/") or re.match(r"^[A-Za-z]:", n):
+                  return None
+              parts = PurePosixPath(n).parts
+              if ".." in parts or any("\x00" in p for p in parts):
+                  return None
+              return "/".join(parts)
+
+          if not ZIP.exists():
+              print("No update ZIP present - nothing to apply.")
+              sys.exit(0)
+          print(f"Processing {ZIP} ({ZIP.stat().st_size} bytes)")
+          if not zipfile.is_zipfile(ZIP):
+              fail("File is not a valid ZIP archive.")
+
+          tmp = Path(tempfile.mkdtemp()).resolve()
+          with zipfile.ZipFile(ZIP) as z:
+              bad = z.testzip()
+              if bad:
+                  fail(f"ZIP is corrupted (bad member: {bad}).")
+              infos = z.infolist()
+              if len(infos) > MAX_FILES or sum(i.file_size for i in infos) > MAX_BYTES:
+                  fail("ZIP exceeds size or file-count limits.")
+              for i in infos:
+                  name = safe(i.filename)
+                  if name is None:
+                      fail(f"Unsafe path in ZIP (path traversal): {i.filename!r}")
+                  if i.is_dir() or any(j in name for j in JUNK):
+                      continue
+                  if stat.S_ISLNK(i.external_attr >> 16):
+                      fail(f"Symlinks are not allowed: {name}")
+                  t = (tmp / name).resolve()
+                  if not str(t).startswith(str(tmp) + os.sep):
+                      fail(f"Path escapes extraction folder: {name}")
+                  t.parent.mkdir(parents=True, exist_ok=True)
+                  with z.open(i) as s, open(t, "wb") as d:
+                      shutil.copyfileobj(s, d)
+
+          # locate project root (shallowest folder holding index.html)
+          cands = [p.parent for p in tmp.rglob("index.html")]
+          if not cands:
+              fail("No index.html found in the ZIP.")
+          depth = lambda p: len(p.relative_to(tmp).parts)
+          best = min(depth(c) for c in cands)
+          top = [c for c in cands if depth(c) == best]
+          if len(top) > 1:
+              top = [c for c in top if (c / "src").is_dir()]
+              if len(top) != 1:
+                  fail("Ambiguous project root: several index.html at the same level.")
+          root = top[0]
+          print("Project root in ZIP:", root.relative_to(tmp) or ".")
+
+          added, replaced, skipped = [], [], []
+          for f in sorted(p for p in root.rglob("*") if p.is_file()):
+              rel = f.relative_to(root).as_posix()
+              if any(j in rel for j in JUNK):
+                  continue
+              dest = REPO / rel
+              if rel.startswith((".github/", ".git/", "updates/")) or (rel in KEEP_IF_EXISTS and dest.exists()):
+                  skipped.append(rel); print("  protected, skipped:", rel); continue
+              (replaced if dest.exists() else added).append(rel)
+              dest.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copyfile(f, dest)
+
+          # validation
+          problems = [f"missing essential file: {f}" for f in ESSENTIAL if not (REPO / f).is_file()]
+          if not problems:
+              html = (REPO / "index.html").read_text(errors="replace")
+              for ref in re.findall(r'(?:src|href)="([^"]+)"', html):
+                  if re.match(r"^(https?:|//|data:|#|mailto:)", ref):
+                      continue
+                  if ref.startswith("/"):
+                      problems.append(f"index.html uses absolute path (breaks GitHub Pages): {ref}")
+                  elif not (REPO / re.split(r"[?#]", ref)[0]).exists():
+                      problems.append(f"index.html references missing file: {ref}")
+              for js in (REPO / "src").rglob("*.js"):
+                  txt = js.read_text(errors="replace")
+                  for imp in re.findall(r"""from\s+['"](\.[^'"]+)['"]""", txt):
+                      if not (js.parent / imp).resolve().is_file():
+                          problems.append(f"{js.relative_to(REPO)} imports missing file: {imp}")
+                  chk = tmp / "check.mjs"
+                  chk.write_text(txt)
+                  r = subprocess.run(["node", "--check", str(chk)], capture_output=True, text=True)
+                  if r.returncode:
+                      problems.append(f"syntax error in {js.relative_to(REPO)}: {r.stderr.strip().splitlines()[-1:]}")
+          if problems:
+              fail("Validation failed:\n" + "\n".join("- " + p for p in problems))
+
+          ZIP.unlink()
+          (REPO / "updates").mkdir(exist_ok=True)
+          (REPO / "updates" / "LAST_UPDATE.json").write_text(json.dumps({
+              "applied_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "added": added, "replaced": replaced, "protected_skipped": skipped}, indent=2))
+          m = f"Added {len(added)}, replaced {len(replaced)}, protected-skipped {len(skipped)}."
+          print(m); summary(f"### Update applied\n{m}")
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Nothing to commit"; exit 0; fi
+          git commit -m "Update Legacy of Four game build"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check game files exist
+        id: check
+        run: |
+          if [ -f index.html ] && [ -f src/main.js ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "No game yet - upload updates/legacy-of-four_update.zip"; echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Build static site
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          mkdir _site
+          cp -r index.html src _site/
+          [ -d assets ] && cp -r assets _site/ || true
+          [ -d styles ] && cp -r styles _site/ || true
+          touch _site/.nojekyll
+      - if: steps.check.outputs.ok == 'true'
+        uses: actions/configure-pages@v5
+      - if: steps.check.outputs.ok == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        if: steps.check.outputs.ok == 'true'
+        uses: actions/deploy-pages@v4
