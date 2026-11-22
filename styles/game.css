@@ -45,7 +45,7 @@ body{display:flex;flex-direction:column;touch-action:none;padding-top:env(safe-a
 
 /* ---- sentuh landscape: layar penuh, kontrol melayang di dalam game ---- */
 @media (pointer:coarse) and (orientation:landscape){
-  :root{--u:calc(100dvh / 540)}
+  :root{--u:min(calc(100dvh / 430), 1.3px)} /* landscape: kontrol lebih besar, mengikuti tinggi layar (maks 1.3 untuk tablet) */
   html,body{position:fixed;inset:0;width:100%;height:100%;padding:0}
   #title{display:none}
   #stage{position:fixed;inset:0;padding:0;gap:0;justify-content:center;align-items:center}

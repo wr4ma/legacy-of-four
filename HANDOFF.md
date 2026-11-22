@@ -59,7 +59,7 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 
 ## 5. UX / layout (terbaru)
 - **Portrait sentuh:** judul "LEGACY OF FOUR" + bezel layar di tengah area atas; panel arcade di bawah: joystick bola merah kiri; tombol segitiga tanpa tindih (Jump kiri-atas biru, Special kanan-atas kuning, Attack besar merah di bawah).
-- **Landscape sentuh:** layar penuh tanpa bar hitam (canvas melebar), kontrol melayang transparan (.6) di dalam game, disembunyikan saat menu (splash/select/over/win; ketuk layar saja), judul disembunyikan.
+- **Landscape sentuh (23 Nov: kontrol diperbesar ±35%, `--u = min(100dvh/430, 1.3px)`, tanpa tumpang tindih di 667x375 s/d 1024x768; fitur atur-posisi tombol DIBATALKAN user):** layar penuh tanpa bar hitam (canvas melebar), kontrol melayang transparan (.6) di dalam game, disembunyikan saat menu (splash/select/over/win; ketuk layar saja), judul disembunyikan.
 - **Desktop:** kontrol sentuh disembunyikan, judul tampil.
 - **Zoom** (double-tap/pinch) dimatikan di controls.js + `touch-action:none`.
 - **Fullscreen:** iPhone TIDAK mengizinkan menyembunyikan bar browser. Solusi: Safari → Share → Tambah ke Layar Utama (meta apple-mobile-web-app-capable sudah ada). Tombol ⛶ (Fullscreen API) hanya muncul di browser yang mendukung (Android/iPad/desktop).
