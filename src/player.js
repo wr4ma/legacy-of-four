@@ -1,4 +1,5 @@
 import { FT, FB, doAttack, doSpecial } from './combat.js';
+import { dust } from './effects.js';
 import { drawChar, sheetReady } from './spritesheets.js';
 
 export const CHARS = [
@@ -27,7 +28,7 @@ export function updatePlayer(G, dt, inp) {
     if (inp.atk && p.cdT <= 0) doAttack(G);
     if (inp.sp && p.spCD <= 0) doSpecial(G);
   }
-  if (p.z > 0 || p.vz > 0) { p.vz -= 900 * dt; p.z += p.vz * dt; if (p.z <= 0) { p.z = 0; p.vz = 0; } }
+  if (p.z > 0 || p.vz > 0) { p.vz -= 900 * dt; p.z += p.vz * dt; if (p.z <= 0) { p.z = 0; if (p.vz < -150) dust(G, p.x, p.y, 4); p.vz = 0; } }
   p.y = Math.max(FT, Math.min(FB, p.y));
 }
 

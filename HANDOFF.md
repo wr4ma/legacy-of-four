@@ -2,86 +2,93 @@
 
 > Cara mulai di chat baru: lampirkan `legacy-of-four_snapshot.zip` + file ini, lalu tulis:
 > "Lanjutkan project Legacy of Four. Baca HANDOFF.md dulu. Balas dalam bahasa Indonesia. Tugas hari ini: ..."
+> Terakhir diperbarui: 23 Nov 2026.
 
 ## 1. Pemilik & preferensi
 - GitHub: **wr4ma** · Repo: **legacy-of-four** (Public) · Game live: https://wr4ma.github.io/legacy-of-four/
 - Bahasa: **Indonesia**. Perangkat: **iPhone (browser Brave)**, kerja lewat web GitHub (Upload files), bukan git/terminal.
-- Maunya: otomatis total. Cukup upload `legacy-of-four_update.zip`; tidak mau ekstrak ZIP / edit kode / commit manual.
-- Konsep: beat 'em up side-scrolling ala *Cadillacs & Dinosaurs*, 4 karakter, alur **Splash → Pilih Karakter → Game**.
-- Ingin visual **sama persis dengan blueprint** (pixel art + efek cahaya) → butuh file sprite jadi (lihat SPRITE_PROMPTS.md).
+- Maunya: otomatis total. Cukup upload `legacy-of-four_update.zip` ke folder `updates`; tidak mau ekstrak ZIP / edit kode / commit manual.
+- Konsep: beat 'em up side-scrolling ala *Cadillacs & Dinosaurs*, 4 karakter keluarga, alur **Splash → Pilih Karakter → Game**.
+- Sprite asli (4 sheet AI) sudah dipasang. Visual target = blueprint (`docs/reference/blueprint.jpg`).
 
-## 2. Pipeline update (sudah dibuat, 1 file saja)
-`.github/workflows/update-game.yml` (isi lengkap logika, tidak ada skrip lain):
-- Trigger: push ke `main` + manual (`workflow_dispatch`).
-- Job **update**: jika ada `updates/legacy-of-four_update.zip` → cek valid & tidak korup → tolak path traversal/symlink →
-  cari root proyek (boleh dibungkus 1 folder) → salin file (tambah/timpa, tidak pernah menghapus) →
-  validasi (`index.html` & `src/main.js` ada, referensi file di index.html ada, import JS ada, `node --check` semua `src/*.js`) →
-  hapus ZIP → tulis `updates/LAST_UPDATE.json` → commit "Update Legacy of Four game build" → push.
-  Gagal validasi = job merah, **tidak ada commit**, game live tidak berubah.
-- Job **deploy** (needs update): salin `index.html src assets styles` ke `_site` → GitHub Pages. Jika game belum ada, deploy dilewati.
-- Dilindungi (tidak ditimpa ZIP): `.github/`, `.git/`, `updates/`; `README.md/.gitignore/.gitattributes` dilindungi bila sudah ada.
-  File workflow hanya bisa diubah manual (GITHUB_TOKEN tidak boleh mengubah workflow).
-- Pengaturan manual satu kali (sudah dijelaskan ke user): Settings → Pages → Source = **GitHub Actions**; Settings → Actions → Workflow permissions = **Read and write**.
-- **Penting:** folder harus bernama `updates` (huruf kecil, pakai s). User pernah membuat folder `Update` → salah, tidak terpicu.
-- Batas: upload browser 25 MB/file.
+## 2. Pipeline update (sudah jalan, terbukti di GitHub nyata)
+`.github/workflows/update-game.yml` (hanya bisa diubah manual oleh user):
+- Trigger: push ke `main` + manual. Job **update**: jika ada `updates/legacy-of-four_update.zip` → cek valid → tolak path traversal/symlink →
+  cari root proyek **dengan mencari `index.html` di dalam ZIP** → salin file (tambah/timpa, tidak pernah menghapus) → validasi
+  (`index.html` & `src/main.js` ada, referensi di index.html ada, import JS ada, `node --check src/*.js`) → hapus ZIP → commit → push.
+  Gagal validasi = job merah, tidak ada commit, game live tidak berubah.
+- Job **deploy**: menyalin **hanya** `index.html src assets styles` ke GitHub Pages. => file di luar empat itu (mis. manifest di root) TIDAK ikut live. Taruh semua aset di `assets/`.
+- Dilindungi: `.github/`, `.git/`, `updates/`; README/.gitignore/.gitattributes bila sudah ada.
+- Pengaturan satu kali (sudah beres): Pages Source = GitHub Actions; Workflow permissions = Read and write.
+- **PELAJARAN:** ZIP update HARUS berisi game lengkap (ada `index.html` di root atau 1 folder pembungkus). ZIP parsial berisi file yang berubah saja ditolak ("No index.html found in the ZIP"). Selalu kirim paket penuh (±2–3 MB). Folder harus bernama `updates` (huruf kecil).
+- Batas upload browser 25 MB/file. Setelah update, user sebaiknya tutup-buka tab (cache).
 
 ## 3. Struktur game (HTML5 canvas, ES modules, tanpa build/dependensi)
 ```
-index.html            canvas#game + #touch (stick, btnSp, btnJump, btnAtk)
-styles/game.css       layout 16:9; kontrol sentuh hanya tampil di layar sentuh
-assets/backgrounds/splash.jpg   splash dari user (1280px) — sudah memuat teks "Coming Soon / Press any key"
-assets/{characters,effects,enemies,audio}/  masih kosong (.gitkeep) — disiapkan untuk sprite
-src/main.js      loop, state machine (splash→select→play→clear/over/win), kamera, render urut-Y, efek
-src/controls.js  keyboard + stick + tombol; edge-trigger (atk/jump/sp/nav/any/tap)
-src/player.js    CHARS (data 4 karakter), newPlayer, updatePlayer, drawPlayer, drawMan (dipakai musuh)
-src/sprites.js   sprite pixel-art buatan kode: heroFrame(i,pose), drawHeroAt(ctx,i,pose,x,y,f,scale); canvas 64x48, outline otomatis
+index.html            #stage(judul + #screen(canvas#game + tombol #fs)) + #touch(#stick/#knob, #btns: btnJump/btnSp/btnAtk); meta PWA/iOS
+styles/game.css       variabel --u (skala UI), portrait/landscape/desktop, panel arcade, tombol 3D
+assets/backgrounds/splash.jpg    splash user (memuat "Coming Soon / Press any key")
+assets/characters/<id>.png       sprite sheet 4 karakter (lihat bagian 6)
+assets/effects/fx_<id>_special.png  efek special (BELUM dipakai kode)
+assets/icons/icon-{180,192,512}.png + assets/manifest.webmanifest   (PWA / Add to Home Screen)
+src/main.js      loop, state machine (splash→select→play→clear/over/win), kamera, render urut-Y, efek busur garis (blok f.sp), fit() lebar adaptif, set body[data-state]
+src/controls.js  keyboard + stick + tombol (edge-trigger), tap→koordinat canvas (cv.width), tombol fullscreen, blok zoom iOS
+src/player.js    CHARS (data 4 karakter), newPlayer (spawn x=190), updatePlayer, drawPlayer (pilih pose+progres → drawChar), drawMan (musuh)
+src/spritesheets.js  loadSheets, COUNTS (frame per baris per karakter), pickFrame (murni), drawChar (sheet, fallback ke sprites.js)
+src/sprites.js   sprite pixel-art buatan kode (fallback): heroFrame, drawHeroAt
 src/combat.js    hitE, hurtPlayer, doAttack (combo 3 hit), doSpecial, updateShots, FT/FB (lantai y 290..425)
 src/enemy.js     thug, raptor, brute, boss; AI; drawEnemy
 src/boss.js      bossStrike (stomp AoE)
-src/level.js     STAGES (2 stage, wave terkunci + "GO ➜"), startStage, updateLevel, drawBG parallax
-src/ui.js        splash (gambar), layar pilih karakter, HUD, overlay, T() teks berkontur
+src/level.js     STAGES (2 stage, wave terkunci + "GO ➜"), startStage, updateLevel, drawBG parallax (pakai G.W)
+src/effects.js  pemuat strip efek special, spark(), dust(), drawFx() (dipanggil dari main.js)
+src/ui.js        splash (gambar, latar blur gelap bila layar lebih lebar), pilih karakter (digeser ke tengah), HUD, overlay, T()
+docs/reference/blueprint.jpg, splash_original.jpg ; docs/sprite_pipeline/ (skrip + sheet sumber, lihat bagian 6)
 ```
-Resolusi logika 800×450. Dunia sisi-scroll; kamera mengunci saat wave, lanjut setelah musuh habis. 3 nyawa, +40% HP antar-stage.
+Resolusi logis: tinggi tetap 450; lebar **800** (portrait/desktop) atau **800–1080** (HP landscape, mengikuti rasio layar, `fit()` di main.js). Kode yang butuh lebar pakai `G.W`; menu pakai offset `(G.W-800)/2`.
+Dunia sisi-scroll; kamera mengunci saat wave. 3 nyawa, +40% HP antar-stage.
 
-## 4. Karakter (sumber: blueprint user — `docs/reference/blueprint.jpg`)
-| id | Nama | Julukan | Senjata | Special | Stat & gaya |
-|---|---|---|---|---|---|
-| abah | Abah | Sang Ayah, Penjaga Keluarga | Pecutan Sarung | **Pecutan Maut** (sapuan oranye) | HP140 SPD100 DMG13 reach66, lambat-berjangkauan |
-| ema | Ema | Sang Ibu, Sumber Kekuatan | Sepatula & Panci | **Dapur Mematikan** (gelombang ungu) | HP120 SPD115 DMG12, special +25 HP |
-| rhejab | Rhe~jab | Anak Pertama, Penuh Semangat | Golok | **Tebasan Kilat** (tebasan biru-putih) | HP100 SPD150 DMG11, cepat, special dmg ×3 |
-| yhudhaaa | Yhud~haaa | Si Bungsu, Penuh Cahaya | Pentungan Lightstick | **Cahaya Penuntun** (cincin merah) | HP85 SPD160 DMG9, **jarak jauh** (tembak cahaya) |
-Kontrol: WASD/panah gerak · J/Space/Z serang · K/X lompat · L/C special (cooldown 6 dtk) · ←/→+Enter pilih · sentuh: stick + 3 tombol.
+## 4. Karakter
+| id | Nama | Senjata | Special | Stat & gaya |
+|---|---|---|---|---|
+| abah | Abah (Sang Ayah) | Pecutan Sarung | **Pecutan Maut** (api oranye) | HP140 SPD100 DMG13 reach66 |
+| ema | Ema (Sang Ibu) | Sepatula & Panci | **Dapur Mematikan** (ungu) | HP120 SPD115 DMG12, special +25 HP |
+| rhejab | Rhe~jab (Anak Pertama) | Golok | **Tebasan Kilat** (biru-putih) | HP100 SPD150 DMG11, special dmg ×3 |
+| yhudhaaa | Yhud~haaa (Si Bungsu) | Pentungan Lightstick | **Cahaya Penuntun** (cincin merah) | HP85 SPD160 DMG9, jarak jauh |
+Kontrol: WASD/panah gerak · J/Space/Z serang · K/X lompat · L/C special (cooldown 6 dtk) · ←/→+Enter pilih · sentuh: joystick + 3 tombol.
 Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 
-## 5. Status & keterbatasan jujur
-- Sudah: seluruh alur game jalan di simulasi headless (4 karakter tamat stage 1; stage 2 sampai bos di versi awal), pipeline ZIP diuji lokal (ZIP wrapped/root, path traversal, kode rusak).
-- **Belum diuji**: di browser/iPhone sungguhan (tata letak kontrol sentuh, performa), dan run Actions nyata di GitHub dari sisi saya.
-- Sprite sekarang **buatan kode** (mirip blueprint tapi bukan sama persis). Musuh & latar masih bertema dinosaurus/hutan,
-  tidak sesuai splash (kampung/jalan sore, papan "Bersama Selalu", grafiti "Legacy Never Fades").
-- Belum ada: suara/musik, item pemulih, jeda/pause, 2 pemain.
+## 5. UX / layout (terbaru)
+- **Portrait sentuh:** judul "LEGACY OF FOUR" + bezel layar di tengah area atas; panel arcade di bawah: joystick bola merah kiri; tombol segitiga tanpa tindih (Jump kiri-atas biru, Special kanan-atas kuning, Attack besar merah di bawah).
+- **Landscape sentuh:** layar penuh tanpa bar hitam (canvas melebar), kontrol melayang transparan (.6) di dalam game, disembunyikan saat menu (splash/select/over/win; ketuk layar saja), judul disembunyikan.
+- **Desktop:** kontrol sentuh disembunyikan, judul tampil.
+- **Zoom** (double-tap/pinch) dimatikan di controls.js + `touch-action:none`.
+- **Fullscreen:** iPhone TIDAK mengizinkan menyembunyikan bar browser. Solusi: Safari → Share → Tambah ke Layar Utama (meta apple-mobile-web-app-capable sudah ada). Tombol ⛶ (Fullscreen API) hanya muncul di browser yang mendukung (Android/iPad/desktop).
+- Cache iOS keras: setelah update, tutup-buka tab bila tampilan belum berubah.
 
-## 5b. Layout UX (terbaru)
-- `index.html`: `#stage` (judul "LEGACY OF FOUR" + bezel `#screen` berisi canvas) dan `#touch` (panel arcade). Semua ukuran pakai variabel `--u` (≈1px di lebar 390) di `styles/game.css`.
-- Portrait sentuh: judul + layar di tengah area atas, panel arcade di bawah: joystick bola merah kiri; tombol miring naik ke kanan (Attack besar merah, Jump biru, Special kuning). Landscape sentuh: **layar penuh tanpa bar hitam** — lebar logis canvas adaptif (`fit()` di main.js: 800..1080 px, tinggi tetap 450; `G.W` dipakai kamera/spawn/HUD; menu digeser ke tengah dengan offset `(G.W-800)/2`), kontrol melayang (opacity .6) di dalam game, disembunyikan saat menu (`body[data-state]`), judul disembunyikan. Tombol ⛶ (fullscreen API) hanya muncul di browser yang mendukung (bukan iPhone). Untuk fullscreen sejati di iPhone: Share → Tambah ke Layar Utama (ada meta apple-mobile-web-app-capable, `assets/manifest.webmanifest`, ikon di `assets/icons/`).
-- Tombol arcade: Jump kiri-atas, Special kanan-atas, Attack besar di bawah (tidak tindih). Pemain spawn di x=190 agar tidak tertutup joystick. Desktop: kontrol sentuh disembunyikan, judul tetap tampil.
-- Zoom dimatikan di `controls.js` (gesturestart/gesturechange, dblclick, touchmove, double-tap touchend preventDefault) + `touch-action:none` di CSS.
-- `controls.js`: tombol punya kelas `.on` saat ditekan; knob visual bergerak 55% dari radius.
+## 6. Sprite
+- Sumber: 4 sheet AI user (1536×1024, latar magenta) di `docs/sprite_pipeline/source/` (abah=784BE68C…, ema=B3B3B966…, rhejab=60563C7E…, yhudhaaa=77FA7204…).
+- Pipeline ulang: `docs/sprite_pipeline/{key.py,seg.py,build.py}` (butuh Python + numpy/scipy/Pillow; path input di `key.py` mengarah ke /mnt/user-data/uploads — sesuaikan). Chroma key magenta, potong komponen terhubung, belah gabungan di minimum profil kolom, bersihkan pecahan liar, skala karakter ±100 px, kaki rata di garis tanah.
+- `assets/characters/<id>.png`: sel **192×160**, menghadap kanan, kaki di **(96,150)**, baris tetap: idle, walk, atk1, atk2, atk3, jump, hurt, down, special. Jumlah frame per baris BEDA per karakter → `COUNTS` di `src/spritesheets.js`:
+  abah idle3 walk5 atk1 4 atk2 4 atk3 4 jump3 hurt2 down4 special7 · ema 3/5/3/3/3/3/2/4/4 · rhejab 3/6/4/3/4/3/2/4/4 · yhudhaaa 4/5/3/2/3/3/2/4/3 (urutan sama).
+  Mengubah jumlah frame di sheet = ubah COUNTS.
+- Pembagian atk1/2/3 untuk Ema & Yhud~haaa adalah TEBAKAN dari urutan gambar; bila gerakan terasa terbalik, geser pembagiannya di build.py + COUNTS.
+- `assets/effects/fx_<id>_special.png`: strip sel **256×160** (abah 8, ema 7, rhejab 8, yhudhaaa 7 frame), jangkar kiri-bawah ≈(8,150): taruh di kaki pemain, menghadap kanan. **SUDAH dipasang** lewat `src/effects.js` (drawFx; skala = sr/85, karakter `full` (Yhud~haaa) dicerminkan dua sisi).
+- Kekurangan: potongan otomatis kadang menyisakan tangan/cambuk yang terpotong antar-frame (terutama walk Rhe~jab, atk Abah). Perbaikan terbaik = sheet yang lebih rapi dari generator (frame berjarak jelas).
 
-## 6. Rencana lanjutan (urut prioritas)
-1. ~~Pemuat sprite sheet~~ **SELESAI** (`src/spritesheets.js`: `drawChar`, `pickFrame`; otomatis pakai `assets/characters/<id>.png` bila ada, per karakter, kalau tidak pakai sprite kode). Tinggal menunggu PNG asli user. Diuji di Chromium dengan sheet tes (abah) + 3 karakter fallback.
-2. Pemuat **efek** (spritesheet) menggantikan busur garis di `main.js` (blok `f.sp`) + efek hit/ledakan/debu.
-3. Ganti latar & musuh ke tema kampung/jalan sore (preman, anjing/kucing liar? — tanya user), bos sesuai cerita.
-4. Audio (SFX pukul, special, BGM) — file di `assets/audio/`.
-5. Item makanan, pause, 2 pemain, lebih banyak stage.
+## 7. Status & keterbatasan jujur
+- Diuji headless + Chromium (portrait 390×844, landscape 844×390/932×430, desktop) tanpa error; alur ketuk-pilih-mulai di landscape lolos. **Belum diuji langsung di iPhone oleh saya** (user mengirim screenshot hasil live: sprite & layout tampil, sempat ada tombol tumpang tindih → sudah diperbaiki di build terakhir, belum dikonfirmasi user).
+- Pipeline GitHub terbukti berjalan (gagal sekali karena ZIP parsial, lalu dibenahi).
+- Musuh & latar masih tema dinosaurus/hutan, tidak cocok dengan splash/keluarga (kampung/jalan sore, papan "Bersama Selalu", grafiti "Legacy Never Fades").
+- Belum ada: pemuat efek special, suara/musik, item pemulih, pause, 2 pemain.
 
-### Sprite sheet (SUDAH TERPASANG — aset asli dari user)
-- Sumber: 4 sheet AI (1536x1024, latar magenta) -> dipotong & disusun ulang (chroma key, potong frame, skala karakter ±100 px, titik kaki rata).
-- `assets/characters/<id>.png`: sel **192x160**, menghadap kanan, titik kaki **(96,150)**, baris tetap: idle, walk, atk1, atk2, atk3, jump, hurt, down, special. Jumlah frame per baris BEDA per karakter -> tabel `COUNTS` di `src/spritesheets.js` (abah special 7, ema special 4, rhejab walk 6, yhudhaaa idle 4 dst). Ganti sheet = ubah COUNTS bila jumlah frame berubah.
-- `assets/effects/fx_<id>_special.png`: strip sel **256x160**, jumlah frame abah 8, ema 7, rhejab 8, yhudhaaa 7; titik jangkar = kiri-bawah (≈(8,150)) -> taruh di kaki pemain, menghadap kanan. **Belum dipasang di kode** (tugas berikutnya: pemuat efek, ganti busur garis di `main.js` blok `f.sp`).
-- Hook: `drawChar()` di `spritesheets.js` dipakai `drawPlayer()`, layar pilih, dan HUD; fallback ke sprite kode bila PNG tidak ada.
-- Catatan: pecahan frame hasil potong otomatis (tangan/cambuk yang tumpang tindih antar frame) bisa kurang rapi di beberapa frame; perbaikan = sheet lebih rapi dari generator.
+## 8. Rencana lanjutan (urut prioritas)
+1. ~~Pemuat efek~~ SELESAI 23 Nov (special sprite + percikan pukul + debu pendaratan/jatuh). Dulu: (`assets/effects/fx_<id>_special.png`) menggantikan busur garis di `main.js` blok `f.sp`; + efek hit/debu/ledakan. Frame di-sync dengan `doSpecial` (durasi spT 0.5 dtk).
+2. Ganti latar & musuh ke tema kampung/jalan sore (tanya user jenis musuh: preman? anjing/kucing liar?), bos sesuai cerita. Perlu sprite musuh (siapkan prompt seperti SPRITE_PROMPTS.md).
+3. Audio (SFX pukul, special, BGM) di `assets/audio/`.
+4. Pause, item makanan, 2 pemain, lebih banyak stage; tombol fullscreen/pause di UI.
+5. Rapikan frame sprite yang terpotong bila user punya sheet yang lebih bersih.
 
-## 7. Cara kerja yang disarankan
-- Selalu kirim hasil sebagai `legacy-of-four_update.zip` (game di root atau 1 folder pembungkus; jangan sertakan `.github`).
-- Sebelum mengirim: `node --check src/*.js` + simulasi headless; jalankan ulang logika validasi workflow terhadap ZIP.
-- Jangan menyuruh user ekstrak/commit manual; beri langkah singkat berbahasa Indonesia untuk iPhone.
+## 9. Cara kerja yang disarankan
+- Selalu kirim **ZIP game lengkap** `legacy-of-four_update.zip` (index.html di root; jangan sertakan `.github`). Cek `node --check src/*.js`, uji di Playwright/Chromium (viewport HP), lalu `present_files`.
+- Jaga ringkas, langkah iPhone berbahasa Indonesia: folder `updates` → Upload files → Commit → tunggu Actions hijau → tutup-buka game.
+- Jika Actions merah, minta screenshot log langkah "Validate and apply update ZIP".

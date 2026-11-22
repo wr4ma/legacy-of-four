@@ -1,6 +1,7 @@
 import { initControls, pollInput, input } from './controls.js';
 import { newPlayer, updatePlayer, drawPlayer } from './player.js';
 import { updateEnemies, drawEnemy } from './enemy.js';
+import { drawFx } from './effects.js';
 import { updateShots } from './combat.js';
 import { STAGES, startStage, updateLevel, drawBG } from './level.js';
 import { drawSplash, drawSelect, drawHUD, drawOverlay, cardHit } from './ui.js';
@@ -69,9 +70,7 @@ function draw() {
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   ctx.fillStyle = '#fff';
   for (const s of G.shots) { ctx.fillStyle = G.p.ch.fx; ctx.beginPath(); ctx.arc(s.x, s.y - 40 - s.z, 8, 0, 7); ctx.fill(); }
-  for (const f of G.fx) {
-    const k = 1 - f.t / f.max;
-    if (f.sp) { ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.d, 1); for (let i = 0; i < 3; i++) { ctx.globalAlpha = (1 - k) * (1 - i * 0.25); ctx.strokeStyle = i ? f.c : '#fff'; ctx.lineWidth = 14 - i * 4; ctx.beginPath(); ctx.arc(0, 0, f.r * (0.5 + k * 0.5) + i * 6, -f.a, f.a); ctx.stroke(); } ctx.restore(); ctx.globalAlpha = 1; continue; } ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.c; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * k, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+  for (const f of G.fx) drawFx(ctx, f);
   ctx.restore();
   drawHUD(ctx, G); drawOverlay(ctx, G);
 }

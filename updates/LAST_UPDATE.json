@@ -1,10 +1,10 @@
 {
-  "applied_at": "2026-11-22T20:03:34.288406+00:00",
+  "applied_at": "2026-11-22T20:14:46.545905+00:00",
   "added": [
-    "assets/icons/icon-180.png",
-    "assets/icons/icon-192.png",
-    "assets/icons/icon-512.png",
-    "assets/manifest.webmanifest"
+    "SPRITE_PROMPTS.md",
+    "docs/reference/blueprint.jpg",
+    "docs/reference/splash_original.jpg",
+    "src/effects.js"
   ],
   "replaced": [
     "HANDOFF.md",
@@ -17,6 +17,10 @@
     "assets/effects/fx_ema_special.png",
     "assets/effects/fx_rhejab_special.png",
     "assets/effects/fx_yhudhaaa_special.png",
+    "assets/icons/icon-180.png",
+    "assets/icons/icon-192.png",
+    "assets/icons/icon-512.png",
+    "assets/manifest.webmanifest",
     "index.html",
     "package.json",
     "src/boss.js",

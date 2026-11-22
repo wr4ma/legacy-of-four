@@ -1,3 +1,4 @@
+import { spark, dust } from './effects.js';
 export const FT = 290, FB = 425;
 const sgn = v => (v < 0 ? -1 : 1);
 const ring = (G, x, y, r, c, t = 0.3) => G.fx.push({ x, y, r, t, max: t, c });
@@ -5,9 +6,9 @@ const ring = (G, x, y, r, c, t = 0.3) => G.fx.push({ x, y, r, t, max: t, c });
 export function hitE(G, e, d, kd, dir) {
   if (e.hp <= 0) return;
   e.hp -= d; e.hurtT = 0.25; e.f = -dir; e.aT = 0; G.shake = 0.1;
-  ring(G, e.x, e.y - 30 - e.z, 16, '#fff', 0.15);
+  spark(G, e.x - dir * 6, e.y - 40 - e.z, '#fff', e.hp <= 0 ? 1.5 : 1);
   if (e.hp <= 0) { G.score += e.score; kd = true; }
-  if (kd && !(e.boss && e.hp > 0)) { e.downT = 0.9; e.vz = 180; e.kx = dir * 220; } else e.kx = dir * 60;
+  if (kd && !(e.boss && e.hp > 0)) { dust(G, e.x, e.y, 3, dir); e.downT = 0.9; e.vz = 180; e.kx = dir * 220; } else e.kx = dir * 60;
 }
 
 export function hurtPlayer(G, d, dir) {
@@ -35,7 +36,8 @@ export function doSpecial(G) {
   p.spCD = 6; p.spT = 0.5; p.inv = 0.7; G.shake = 0.25;
   for (const e of G.ents) if (e.hp > 0 && Math.abs(e.x - p.x) < R + e.r && Math.abs(e.y - p.y) < 60) hitE(G, e, c.dmg * c.sm, true, sgn(e.x - p.x));
   if (c.heal) p.hp = Math.min(p.max, p.hp + c.heal);
-  G.fx.push({ sp: 1, x: p.x + (c.full ? 0 : p.f * 30), y: p.y - 30, d: p.f, r: R * 0.8, a: c.full ? 3.14 : 1.3, t: 0.5, max: 0.5, c: c.fx });
+  G.fx.push({ sp: 1, id: G.sel, full: c.full, sc: R / 85, x: p.x, y: p.y, d: p.f, r: R * 0.8, a: c.full ? 3.14 : 1.3, t: 0.5, max: 0.5, c: c.fx });
+  dust(G, p.x, p.y, 6);
   G.sk = { s: c.sp, c: c.fx, t: 1.3 };
 }
 
