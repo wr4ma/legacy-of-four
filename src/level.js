@@ -2,7 +2,7 @@ import { spawn } from './enemy.js';
 import { FT } from './combat.js';
 
 export const STAGES = [
-  { name: 'Jungle Outpost', sky: ['#2a6f4f', '#e0a840'], far: '#1f4d3a', mid: '#173a2c', gnd: '#6b4f2a', len: 2300,
+  { name: 'Kampung Sore', bg: 's1', sky: ['#7a3b8a', '#ffa040'], far: '#3b3a6b', mid: '#2a2a50', gnd: '#5d5a68', len: 2300,
     waves: [[500, ['thug', 'thug', 'thug']], [1100, ['thug', 'raptor', 'raptor', 'thug']], [1800, ['brute', 'thug', 'thug']]] },
   { name: 'Volcano Rim', sky: ['#5a1f1f', '#ff8a3d'], far: '#3b1717', mid: '#2a1010', gnd: '#4a3a3a', len: 2300,
     waves: [[500, ['raptor', 'raptor', 'thug', 'thug']], [1100, ['brute', 'raptor', 'raptor']], [1750, ['boss', 'thug', 'thug']]] },
@@ -27,8 +27,32 @@ export function updateLevel(G, dt) {
   } else if (!alive) { G.state = G.stage >= STAGES.length - 1 ? 'win' : 'clear'; G.t2 = 3; }
 }
 
+// ---- latar bergambar (assets/backgrounds/<bg>_*.png); bila belum lengkap, dipakai latar prosedural ----
+const IMG = {};
+const img = f => (IMG[f] || (IMG[f] = (() => { const i = new Image(); i.src = 'assets/backgrounds/' + f + '.png'; return i; })()));
+const rdy = i => i.complete && i.naturalWidth > 0;
+function drawImgBG(ctx, G, S) {
+  const k = S.bg, sky = img(k + '_sky'), far = img(k + '_far'), ground = img(k + '_ground'), mids = ['a', 'b', 'c'].map(x => img(k + '_mid_' + x));
+  if (![sky, far, ground, ...mids].every(rdy)) return false;
+  const W = G.W, H = G.H, cam = G.cam || 0, camMax = Math.max(1, S.len - W);
+  ctx.imageSmoothingEnabled = false;
+  const so = -((cam * 0.05) % sky.naturalWidth);
+  for (let x = so; x < W; x += sky.naturalWidth) ctx.drawImage(sky, Math.round(x), 0);
+  ctx.fillStyle = S.sky[1]; ctx.fillRect(0, sky.naturalHeight, W, H);
+  ctx.drawImage(far, -Math.round(Math.min(cam * 0.2, far.naturalWidth - W)), 0);
+  // strip tengah 3 x 800 = 2400 px dipetakan ke panjang stage supaya zona A-B-C selalu tercapai
+  const mw = 800 * mids.length, mo = Math.round(Math.max(0, Math.min(cam / camMax, 1) * (mw - W)));
+  mids.forEach((m, i) => { const x = i * 800 - mo; if (x < W && x + 800 > 0) ctx.drawImage(m, x, -12); });
+  ctx.fillStyle = S.gnd; ctx.fillRect(0, 286, W, H - 286);
+  const gw = ground.naturalWidth, go = -(cam % gw);
+  for (let x = go; x < W; x += gw) ctx.drawImage(ground, Math.round(x), 280);
+  ctx.fillStyle = S.gnd; ctx.fillRect(0, 280 + ground.naturalHeight, W, H);
+  return true;
+}
+
 export function drawBG(ctx, G) {
   const S = STAGES[G.stage || 0], W = G.W, H = G.H, cam = G.cam || 0;
+  if (S.bg && drawImgBG(ctx, G, S)) return;
   const g = ctx.createLinearGradient(0, 0, 0, 290); g.addColorStop(0, S.sky[0]); g.addColorStop(1, S.sky[1]);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = 'rgba(255,240,200,.8)'; ctx.beginPath(); ctx.arc(640, 90, 40, 0, 7); ctx.fill();

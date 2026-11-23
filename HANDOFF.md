@@ -40,6 +40,7 @@ src/combat.js    hitE, hurtPlayer, doAttack (combo 3 hit), doSpecial, updateShot
 src/enemy.js     thug, raptor, brute, boss; AI; drawEnemy
 src/boss.js      bossStrike (stomp AoE)
 src/level.js     STAGES (2 stage, wave terkunci + "GO ➜"), startStage, updateLevel, drawBG parallax (pakai G.W)
+src/level.js    STAGES[0]='Kampung Sore' (bg:'s1'): drawImgBG pakai assets/backgrounds/s1_{sky,far,mid_a,mid_b,mid_c,ground}.png (sky 0.05, far 0.2 clamp, mid 3x800 dipetakan ke panjang stage, ground 1.0 tile); fallback prosedural bila gambar belum ada
 src/effects.js  pemuat strip efek special, spark(), dust(), drawFx() (dipanggil dari main.js)
 src/ui.js        splash (gambar, latar blur gelap bila layar lebih lebar), pilih karakter (digeser ke tengah), HUD, overlay, T()
 docs/reference/blueprint.jpg, splash_original.jpg ; docs/sprite_pipeline/ (skrip + sheet sumber, lihat bagian 6)
@@ -93,3 +94,9 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 - Selalu kirim **ZIP game lengkap** `legacy-of-four_update.zip` (index.html di root; jangan sertakan `.github`). Cek `node --check src/*.js`, uji di Playwright/Chromium (viewport HP), lalu `present_files`.
 - Jaga ringkas, langkah iPhone berbahasa Indonesia: folder `updates` → Upload files → Commit → tunggu Actions hijau → tutup-buka game.
 - Jika Actions merah, minta screenshot log langkah "Validate and apply update ZIP".
+
+
+## 23 Nov: Stage 1 bergambar + rencana musuh
+- Stage 1 kini 'Kampung Sore' (aset user, alpha dibersihkan). Jungle Outpost diganti; stage 2 masih Volcano Rim (placeholder prosedural, bos lama).
+- Musuh stage 1 masih placeholder prosedural (thug/raptor/brute). Prompt musuh Belanda + preman + anjing + Jenderal: `STAGE1_ENEMIES_PROMPTS.md` (sheet 192x160 di assets/enemies/<id>.png). Langkah berikutnya: pemuat musuh bersprite, tongkat listrik (stun), bos Jenderal.
+- Catatan merek: s1_mid_c.png menampilkan logo 'Indomaret' (merek dagang nyata).
