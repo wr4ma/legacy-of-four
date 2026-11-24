@@ -162,12 +162,11 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-  deploy:
+  build:
     needs: update
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      ok: ${{ steps.check.outputs.ok }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -188,9 +187,24 @@ jobs:
       - if: steps.check.outputs.ok == 'true'
         uses: actions/configure-pages@v5
       - if: steps.check.outputs.ok == 'true'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.ok == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment2.outputs.page_url || steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
-        if: steps.check.outputs.ok == 'true'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Deploy failed - wait 60s then retry
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 60
+      - id: deployment2
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
