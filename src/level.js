@@ -1,3 +1,4 @@
+import { asset } from './ver.js';
 import { spawn } from './enemy.js';
 import { FT } from './combat.js';
 
@@ -29,7 +30,7 @@ export function updateLevel(G, dt) {
 
 // ---- latar bergambar (assets/backgrounds/<bg>_*.png); bila belum lengkap, dipakai latar prosedural ----
 const IMG = {};
-const img = f => (IMG[f] || (IMG[f] = (() => { const i = new Image(); i.src = 'assets/backgrounds/' + f + '.png'; return i; })()));
+const img = f => (IMG[f] || (IMG[f] = (() => { const i = new Image(); i.src = asset('assets/backgrounds/' + f + '.png'); return i; })()));
 const rdy = i => i.complete && i.naturalWidth > 0;
 function drawImgBG(ctx, G, S) {
   const k = S.bg, sky = img(k + '_sky'), far = img(k + '_far'), ground = img(k + '_ground'), mids = ['a', 'b', 'c'].map(x => img(k + '_mid_' + x));

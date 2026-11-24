@@ -2,6 +2,7 @@ import { CHARS } from './player.js';
 import { drawChar } from './spritesheets.js';
 import { STAGES } from './level.js';
 import { LORE } from './lore.js';
+import { asset } from './ver.js';
 import { drawFx } from './effects.js';
 
 export function T(ctx, s, x, y, sz, c = '#fff', al = 'center') {
@@ -15,7 +16,7 @@ export function cardHit(x, y) {
   return -1;
 }
 
-const splash = new Image(); splash.src = 'assets/backgrounds/splash.jpg';
+const splash = new Image(); splash.src = asset('assets/backgrounds/splash.jpg');
 
 export function drawSplash(ctx, G) {
   const ox = (G.W - 800) / 2;
@@ -75,9 +76,9 @@ export function drawOverlay(ctx, G) {
 
 // ===== Pilih karakter versi portrait (kanvas tinggi 450 x H) =====
 const ids = ['abah', 'ema', 'rhejab', 'yhudhaaa'];
-const load = f => { const im = new Image(); im.src = f; return im; };
+const load = f => { const im = new Image(); im.src = asset(f); return im; };
 const thumbs = ids.map(id => load('assets/portraits/' + id + '_thumb.png'));
-const arts = ids.map(id => { const im = new Image(); im.onerror = () => { im.bad = 1; }; im.src = 'assets/portraits/' + id + '_full.png'; return im; }); // opsional
+const arts = ids.map(id => { const im = new Image(); im.onerror = () => { im.bad = 1; }; im.src = asset('assets/portraits/' + id + '_full.png'); return im; }); // opsional
 const okImg = im => im && im.complete && im.naturalWidth > 0;
 
 export function tallLayout(G) {

@@ -4,6 +4,7 @@
 // urutan baris tetap: idle, walk, atk1, atk2, atk3, jump, hurt, down, special.
 // Jumlah frame tiap baris berbeda per karakter -> lihat COUNTS di bawah.
 import { drawHeroAt } from './sprites.js';
+import { asset } from './ver.js';
 
 export const FW = 192, FH = 160, AXS = 96, AYS = 150;
 export const IDS = ['abah', 'ema', 'rhejab', 'yhudhaaa'];
@@ -27,7 +28,7 @@ export function loadSheets(base = 'assets/characters/') {
       s.ok = s.cols > 0 && s.rows > 0;
     };
     s.img.onerror = () => { s.ok = false; };
-    s.img.src = base + id + '.png';
+    s.img.src = asset(base + id + '.png');
   });
 }
 loadSheets();

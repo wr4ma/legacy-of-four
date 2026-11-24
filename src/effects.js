@@ -1,5 +1,6 @@
 // Efek visual: special (sprite strip assets/effects/fx_<id>_special.png), percikan pukulan, debu, cincin.
 // Strip: sel 256x160, jangkar kiri-bawah ~(8,150), menghadap kanan, dipasang di kaki pemain.
+import { asset } from './ver.js';
 const IDS = ['abah', 'ema', 'rhejab', 'yhudhaaa'];
 const FW = 256, FH = 160, AX = 8, AY = 150;
 const fx = {};
@@ -7,7 +8,7 @@ if (typeof Image !== 'undefined') IDS.forEach(id => {
   const s = fx[id] = { img: new Image(), n: 0, ok: false };
   s.img.onload = () => { s.n = Math.floor(s.img.naturalWidth / FW); s.ok = s.n > 0; };
   s.img.onerror = () => { s.ok = false; };
-  s.img.src = 'assets/effects/fx_' + id + '_special.png';
+  s.img.src = asset('assets/effects/fx_' + id + '_special.png');
 });
 export const fxReady = i => !!(fx[IDS[i]] && fx[IDS[i]].ok);
 

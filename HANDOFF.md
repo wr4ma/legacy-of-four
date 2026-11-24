@@ -100,3 +100,9 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 - Stage 1 kini 'Kampung Sore' (aset user, alpha dibersihkan). Jungle Outpost diganti; stage 2 masih Volcano Rim (placeholder prosedural, bos lama).
 - Musuh stage 1 masih placeholder prosedural (thug/raptor/brute). Prompt musuh Belanda + preman + anjing + Jenderal: `STAGE1_ENEMIES_PROMPTS.md` (sheet 192x160 di assets/enemies/<id>.png). Langkah berikutnya: pemuat musuh bersprite, tongkat listrik (stun), bos Jenderal.
 - Catatan merek: s1_mid_c.png menampilkan logo 'Indomaret' (merek dagang nyata).
+
+## 24 Nov: perbaikan stage 1, anti-cache, dev tools
+- Latar: panel `s1_mid_b` diturunkan 32 px agar garis dasar sejajar A dan C; logo/papan minimarket (lubang transparan akibat key-out putih) diisi lagi; noise dibuang. Skrip: `docs/sprite_pipeline/prep_stage1_bg.py <folder_upload> assets/backgrounds` (sumber = file asli user).
+- **Anti-cache deploy:** `index.html` kini bootstrap: baca `assets/build.json` (no-store) lalu memuat CSS/JS/gambar dengan `?v=<build>`; import map memetakan semua `src/*.js` ke versi bernomor (butuh Safari 16.4+, bila tidak ada hanya entri yang bernomor). Gambar lewat `asset()` di `src/ver.js`. **Setiap membuat update ZIP jalankan `python3 docs/sprite_pipeline/stamp_build.py`** (menulis build.json baru + daftar modul). Modul baru otomatis ikut karena daftar dibuat dari `src/*.js`.
+- **Dev tools** (`src/dev.js`, dibuat lewat JS, aktif saat state play/clear/over/win): Bunuh musuh, Bunuh diri (HP pemain 0, kehilangan 1 nyawa), Lewati stage. Tombol DEV menyembunyikan/menampilkan (disimpan di localStorage `lof_dev`). Portrait: di bawah layar; landscape: melayang di bawah tengah.
+- Debug: `window.__G` = state game.

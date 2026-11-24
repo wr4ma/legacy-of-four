@@ -68,3 +68,16 @@ body{display:flex;flex-direction:column;touch-action:none;padding-top:env(safe-a
   body[data-state=select] #game{width:100%;height:100%;aspect-ratio:auto;border-radius:0}
   body[data-state=select] #fs{display:none!important}
 }
+
+/* ---- dev tools (di bawah layar game) ---- */
+#dev{display:none;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:6px 8px;margin:0 auto}
+#dev .tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+#dev button{height:32px;padding:0 10px;border-radius:8px;border:1px solid #5a5a86;background:#25253d;color:#fff;font:700 12px system-ui,sans-serif;touch-action:manipulation}
+#dev button:active{filter:brightness(1.4)}
+#dev .dt{background:#3a2a55;color:#ffd23f}
+body.devoff #dev .tools{display:none}
+body[data-state=play] #dev,body[data-state=clear] #dev,body[data-state=over] #dev,body[data-state=win] #dev{display:flex}
+@media (pointer:coarse) and (orientation:landscape){
+  #dev{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 6px);transform:translateX(-50%);z-index:30;opacity:.85;padding:0;gap:4px}
+  #dev button{height:28px;font-size:11px;padding:0 8px}
+}

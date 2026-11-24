@@ -1,0 +1,19 @@
+{
+ "build": "20261124-031027",
+ "modules": [
+  "src/boss.js",
+  "src/combat.js",
+  "src/controls.js",
+  "src/dev.js",
+  "src/effects.js",
+  "src/enemy.js",
+  "src/level.js",
+  "src/lore.js",
+  "src/main.js",
+  "src/player.js",
+  "src/sprites.js",
+  "src/spritesheets.js",
+  "src/ui.js",
+  "src/ver.js"
+ ]
+}

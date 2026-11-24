@@ -11,7 +11,7 @@
 <link rel="manifest" href="assets/manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
 <title>Legacy of Four</title>
-<link rel="stylesheet" href="styles/game.css">
+<style>html,body{background:#0b0b14;margin:0}</style>
 </head>
 <body>
 <div id="stage">
@@ -29,6 +29,21 @@
     <button id="btnSp"><b>SPECIAL</b></button>
   </div>
 </div>
-<script type="module" src="src/main.js"></script>
+<script>
+// Bootstrap anti-cache: baca assets/build.json (tanpa cache) lalu muat CSS/JS/gambar dengan ?v=<build>.
+(function () {
+  function boot(b, mods) {
+    window.__BUILD = b || ''; var q = b ? '?v=' + encodeURIComponent(b) : '';
+    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'styles/game.css' + q; document.head.appendChild(l);
+    if (b && mods && mods.length && window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('importmap')) {
+      var im = { imports: {} }; mods.forEach(function (m) { im.imports['./' + m] = './' + m + q; });
+      var s = document.createElement('script'); s.type = 'importmap'; s.textContent = JSON.stringify(im); document.head.appendChild(s);
+    }
+    import('./src/main.js' + q).catch(function (e) { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#f88;padding:12px">Gagal memuat game: ' + e + '</pre>'); });
+  }
+  fetch('assets/build.json', { cache: 'no-store' }).then(function (r) { return r.json(); })
+    .then(function (j) { boot(j.build, j.modules); }, function () { boot('', []); });
+})();
+</script>
 </body>
 </html>
