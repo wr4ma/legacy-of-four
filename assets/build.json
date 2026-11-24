@@ -1,5 +1,5 @@
 {
- "build": "20261124-031027",
+ "build": "20261124-035915",
  "modules": [
   "src/boss.js",
   "src/combat.js",
@@ -7,6 +7,8 @@
   "src/dev.js",
   "src/effects.js",
   "src/enemy.js",
+  "src/enemydata.js",
+  "src/enemysheets.js",
   "src/level.js",
   "src/lore.js",
   "src/main.js",

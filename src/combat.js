@@ -5,17 +5,19 @@ const ring = (G, x, y, r, c, t = 0.3) => G.fx.push({ x, y, r, t, max: t, c });
 
 export function hitE(G, e, d, kd, dir) {
   if (e.hp <= 0) return;
+  if (e.guard && e.aT <= 0 && e.f === -dir) { d *= 0.5; spark(G, e.x + e.f * 18, e.y - 45 - e.z, '#9cf', 0.8); }
   e.hp -= d; e.hurtT = 0.25; e.f = -dir; e.aT = 0; G.shake = 0.1;
   spark(G, e.x - dir * 6, e.y - 40 - e.z, '#fff', e.hp <= 0 ? 1.5 : 1);
   if (e.hp <= 0) { G.score += e.score; kd = true; }
   if (kd && !(e.boss && e.hp > 0)) { dust(G, e.x, e.y, 3, dir); e.downT = 0.9; e.vz = 180; e.kx = dir * 220; } else e.kx = dir * 60;
 }
 
-export function hurtPlayer(G, d, dir) {
+export function hurtPlayer(G, d, dir, stun = 0) {
   const p = G.p;
   if (p.inv > 0 || p.hp <= 0) return;
-  p.hp = Math.max(0, p.hp - d); p.hurtT = 0.3; p.inv = 0.9; p.x += dir * 12; G.shake = 0.18;
-  ring(G, p.x, p.y - 30 - p.z, 18, '#f55', 0.2);
+  p.hp = Math.max(0, p.hp - d); p.hurtT = Math.max(0.3, stun); p.inv = Math.max(0.9, stun + 0.4); p.x += dir * 12; G.shake = 0.18;
+  ring(G, p.x, p.y - 30 - p.z, 18, stun ? '#7cf' : '#f55', 0.2);
+  if (stun) { spark(G, p.x, p.y - 50 - p.z, '#9df', 1.6); spark(G, p.x + dir * 10, p.y - 30 - p.z, '#fff', 1.1); }
 }
 
 export function doAttack(G) {

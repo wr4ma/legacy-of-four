@@ -4,7 +4,8 @@ import { FT } from './combat.js';
 
 export const STAGES = [
   { name: 'Kampung Sore', bg: 's1', sky: ['#7a3b8a', '#ffa040'], far: '#3b3a6b', mid: '#2a2a50', gnd: '#5d5a68', len: 2300,
-    waves: [[500, ['thug', 'thug', 'thug']], [1100, ['thug', 'raptor', 'raptor', 'thug']], [1800, ['brute', 'thug', 'thug']]] },
+    waves: [[500, ['preman_a', 'preman_b', 'preman_a']], [1100, ['anjing_a', 'anjing_a', 'preman_c', 'preman_b']],
+            [1650, ['tentara_a', 'tentara_a', 'preman_d']], [2150, ['tentara_b', 'tentara_c', 'anjing_b', 'preman_c']]] },
   { name: 'Volcano Rim', sky: ['#5a1f1f', '#ff8a3d'], far: '#3b1717', mid: '#2a1010', gnd: '#4a3a3a', len: 2300,
     waves: [[500, ['raptor', 'raptor', 'thug', 'thug']], [1100, ['brute', 'raptor', 'raptor']], [1750, ['boss', 'thug', 'thug']]] },
 ];

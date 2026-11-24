@@ -1,11 +1,19 @@
 {
-  "applied_at": "2026-11-24T03:18:44.251063+00:00",
+  "applied_at": "2026-11-24T04:06:09.103085+00:00",
   "added": [
-    "assets/build.json",
-    "docs/sprite_pipeline/prep_stage1_bg.py",
-    "docs/sprite_pipeline/stamp_build.py",
-    "src/dev.js",
-    "src/ver.js"
+    "assets/enemies/anjing_a.png",
+    "assets/enemies/anjing_b.png",
+    "assets/enemies/preman_a.png",
+    "assets/enemies/preman_b.png",
+    "assets/enemies/preman_c.png",
+    "assets/enemies/preman_d.png",
+    "assets/enemies/tentara_a.png",
+    "assets/enemies/tentara_b.png",
+    "assets/enemies/tentara_c.png",
+    "docs/sprite_pipeline/build_enemies.py",
+    "docs/sprite_pipeline/extract_enemy.py",
+    "src/enemydata.js",
+    "src/enemysheets.js"
   ],
   "replaced": [
     "HANDOFF.md",
@@ -22,6 +30,7 @@
     "assets/backgrounds/s1_mid_c.png",
     "assets/backgrounds/s1_sky.png",
     "assets/backgrounds/splash.jpg",
+    "assets/build.json",
     "assets/characters/.gitkeep",
     "assets/characters/abah.png",
     "assets/characters/ema.png",
@@ -43,11 +52,14 @@
     "assets/portraits/yhudhaaa_thumb.png",
     "docs/reference/blueprint.jpg",
     "docs/reference/splash_original.jpg",
+    "docs/sprite_pipeline/prep_stage1_bg.py",
+    "docs/sprite_pipeline/stamp_build.py",
     "index.html",
     "package.json",
     "src/boss.js",
     "src/combat.js",
     "src/controls.js",
+    "src/dev.js",
     "src/effects.js",
     "src/enemy.js",
     "src/level.js",
@@ -57,6 +69,7 @@
     "src/sprites.js",
     "src/spritesheets.js",
     "src/ui.js",
+    "src/ver.js",
     "styles/game.css"
   ],
   "protected_skipped": []

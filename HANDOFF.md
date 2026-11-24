@@ -106,3 +106,11 @@ Warna UI: abah #4da3ff, ema #b36bff, rhejab #3ddc4a, yhudhaaa #f5a623.
 - **Anti-cache deploy:** `index.html` kini bootstrap: baca `assets/build.json` (no-store) lalu memuat CSS/JS/gambar dengan `?v=<build>`; import map memetakan semua `src/*.js` ke versi bernomor (butuh Safari 16.4+, bila tidak ada hanya entri yang bernomor). Gambar lewat `asset()` di `src/ver.js`. **Setiap membuat update ZIP jalankan `python3 docs/sprite_pipeline/stamp_build.py`** (menulis build.json baru + daftar modul). Modul baru otomatis ikut karena daftar dibuat dari `src/*.js`.
 - **Dev tools** (`src/dev.js`, dibuat lewat JS, aktif saat state play/clear/over/win): Bunuh musuh, Bunuh diri (HP pemain 0, kehilangan 1 nyawa), Lewati stage. Tombol DEV menyembunyikan/menampilkan (disimpan di localStorage `lof_dev`). Portrait: di bawah layar; landscape: melayang di bawah tengah.
 - Debug: `window.__G` = state game.
+
+## 24 Nov: Musuh Stage 1 bersprite
+- Sheet AI user (anjing_a/b, preman_a-d, tentara_a-c) diproses `docs/sprite_pipeline/build_enemies.py <upload> <root>` (+ `extract_enemy.py`) -> `assets/enemies/<id>.png` (sel 192x160, kaki (96,150), baris: idle, walk, atk, hurt, down) + `src/enemydata.js` (ECOUNTS). Pemetaan baris/frame sumber ada di `CFG` skrip itu (hurt/down diambil dari baris campuran). Skala: manusia ±100 px, anjing ±57 px.
+- `src/enemysheets.js`: drawSpr (pilih frame dari state: hp<=0 -> down, downT -> down, hurtT -> hurt, aT -> atk, e.mv -> walk, lainnya idle). `enemy.js` TYPES baru: preman_a/b/c/d, tentara_a/b/c, anjing_a/b (field `spr`, `wind` = durasi windup, `stun`, `guard`, `wf` = kecepatan jalan anim).
+- Tongkat listrik tentara: `hurtPlayer(G,d,dir,stun)` membekukan pemain (hurtT = stun) + percikan biru. Tentara_c (perisai) `guard`: damage depan x0.5 saat tidak menyerang.
+- Gelombang stage 1: 500 [preman_a,b,a] · 1100 [anjing_a x2, preman_c, preman_b] · 1650 [tentara_a x2, preman_d] · 2150 [tentara_b, tentara_c, anjing_b, preman_c]. Bos Jenderal belum ada (menunggu sprite); thug/raptor/brute/boss lama dipakai stage 2.
+- Debug: `__spawn('tentara_a', x, y)`.
+- PERHATIAN cerita: patch bendera di lengan tentara = merah-putih (bendera Indonesia), bukan Belanda (merah-putih-biru), baret merah marun mirip TNI. Perlu diganti bila musuh = tentara Belanda.

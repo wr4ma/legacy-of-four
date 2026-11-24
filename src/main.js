@@ -1,6 +1,6 @@
 import { initControls, pollInput, input } from './controls.js';
 import { newPlayer, updatePlayer, drawPlayer } from './player.js';
-import { updateEnemies, drawEnemy } from './enemy.js';
+import { updateEnemies, drawEnemy, spawn } from './enemy.js';
 import { drawFx } from './effects.js';
 import { initDev } from './dev.js';
 import { updateShots } from './combat.js';
@@ -12,7 +12,7 @@ const cv = document.getElementById('game'), ctx = cv.getContext('2d');
 cv.width = 800; cv.height = H;
 const G = { W: 800, H, state: 'splash', t: 0, sel: 0, stage: 0, cam: 0, score: 0, wi: 0, go: 0, title: 0, t2: 0, locked: false, shake: 0, ents: [], shots: [], fx: [], p: null };
 initControls(cv); window.__G = G; // untuk debug di konsol
-initDev(G);
+initDev(G); window.__spawn = (t, x, y) => spawn(G, t, x, y);
 
 // Lebar logis menyesuaikan layar HP landscape (tanpa bar hitam): 800 (16:9) sampai 1080 (2.4:1).
 // Pilih karakter di portrait memakai kanvas tinggi 450 x H (mengikuti rasio layar).
